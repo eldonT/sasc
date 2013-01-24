@@ -21,7 +21,9 @@ override_dh_gencontrol:
 	dh_gencontrol -- $(SUBSTVARS)
 
 override_dh_auto_configure:
-	cd contrib/sasc-ng; ./configure --dvb-dir=$(DVB_DIR)
+	#cd contrib/sasc-ng; ./configure --dvb-dir=$(DVB_DIR)
+	#cp debian/config.mak-sse2 contrib/sasc-ng/config.mak
+	sed -e "s|#DVB_DIR#|$(CURDIR)/debian/includes/3.7.1/|" < debian/config.mak-sse2 > contrib/sasc-ng/config.mak
 	
 override_dh_auto_clean:
 	cd contrib/sasc-ng; if [ -r config.mak ]; then make clean module_clean; fi

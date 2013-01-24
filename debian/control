@@ -6,7 +6,7 @@ Standards-Version: 3.9.4
 #Build-Depends: debhelper (>= 5), ${kver:BuildDepends}
 Build-Depends: debhelper (>= 8)
 
-Package: sasc-ng-3.7-trunk-amd64
+Package: sasc-ng-3.7-trunk-amd64-sse2
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${kver:Depends}
 Description: softcam to help decode DVB streams
