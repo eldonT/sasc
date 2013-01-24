@@ -1,0 +1,38 @@
+#!/usr/bin/make -f
+
+kernel_name = "3.7-trunk-amd64"
+kernel_version = "3.7.1-1~experimental.2.sasc1"
+
+DVB_DIR=/home/janpascal/src/tmp/linux/linux-3.7.1
+
+PACKAGE = $(firstword $(shell dh_listpackages))
+TMP     = $(CURDIR)/debian/$(PACKAGE)
+
+SUBSTVARS = \
+ -Vkver:Depends="linux-image-$(kernel_name) (=$(kernel_version))" \
+ -Vkver:BuildDepends="linux-headers-$(kernel_name) (=$(kernel_version))"
+
+#SUBSTVARS = -Vkver:BuildDepends="foo (>= 2)"
+
+%:
+	dh $@
+
+override_dh_gencontrol:
+	dh_gencontrol -- $(SUBSTVARS)
+
+override_dh_auto_configure:
+	cd contrib/sasc-ng; ./configure --dvb-dir=$(DVB_DIR)
+	
+override_dh_auto_clean:
+	cd contrib/sasc-ng; if [ -r config.mak ]; then make clean module_clean; fi
+	
+override_dh_auto_build:
+	cd contrib/sasc-ng; make module; make
+
+override_dh_auto_install:
+	mkdir -p $(TMP)/usr/bin
+	mkdir -p $(TMP)/lib/modules/$(kernel_name)/misc
+	mkdir -p $(TMP)/usr/lib/
+	install -m0755 contrib/sasc-ng/sasc-ng $(TMP)/usr/bin/
+	install -m0644 contrib/sasc-ng/dvbloopback.ko $(TMP)/lib/modules/$(kernel_name)/misc
+	install -m0644 contrib/sasc-ng/sc/PLUGINS/lib/* $(TMP)/usr/lib/

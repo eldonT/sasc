@@ -1,0 +1,15 @@
+Source: sasc-ng
+Section: devel
+Priority: extra
+Maintainer: Jan-Pascal van Best <janpascal@vanbest.org>
+Standards-Version: 3.9.4
+#Build-Depends: debhelper (>= 5), ${kver:BuildDepends}
+Build-Depends: debhelper (>= 8)
+
+Package: sasc-ng-3.7-trunk-amd64
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${kver:Depends}
+Description: softcam to help decode DVB streams
+ sasc-ng is a versatile SoftCAM which creates virtual DVB devices 
+ and outputs through them.
+

@@ -1,0 +1,38 @@
+diff -r 29b7b5f231c8 Makefile
+--- a/contrib/sasc-ng/Makefile	Sat Jul 21 20:51:33 2012 +0200
++++ b/contrib/sasc-ng/Makefile	Tue Jan 08 13:14:13 2013 +0100
+@@ -12,7 +12,7 @@
+ CFLAGS   ?= -Wall -D__user= 
+ 
+ ifdef DVB_DIR
+-  INCLUDES = -I$(DVB_DIR)/include
++  INCLUDES = -I$(SOURCE_DIR)/include/uapi -I$(SOURCE_DIR)/arch/x86/include -I$(SOURCE_DIR)/include
+   DVB_MOD_DIR = DVB_DIR=$(DVB_DIR)
+ endif
+ 
+diff -r 29b7b5f231c8 dvbloopback/module/Makefile
+--- a/contrib/sasc-ng/dvbloopback/module/Makefile	Sat Jul 21 20:51:33 2012 +0200
++++ b/contrib/sasc-ng/dvbloopback/module/Makefile	Tue Jan 08 13:14:13 2013 +0100
+@@ -4,7 +4,9 @@
+ dvbloopback-objs := dvb_loopback.o dvblb_proc.o dvblb_forward.o
+ 
+ ifdef DVB_DIR
+-  EXTRA_CFLAGS = -I$(DVB_DIR) -I$(DVB_DIR)/drivers/media/dvb/dvb-core
++  EXTRA_CFLAGS = -I$(SOURCE_DIR) -I$(SOURCE_DIR)/include \
++     -I$(SOURCE_DIR)/include/uapi -I$(SOURCE_DIR)/arch/x86/include \
++     -I$(DVB_DIR)/drivers/media/dvb-core
+   DVB_SRC = $(DVB_DIR)
+   SYMVER = $(DVB_DIR)/../v4l/Module.symvers
+   have_modver := $(wildcard $(SYMVER))
+diff -r 29b7b5f231c8 dvbloopback/module/config-dvb/Makefile
+--- a/contrib/sasc-ng/dvbloopback/module/config-dvb/Makefile	Sat Jul 21 20:51:33 2012 +0200
++++ b/contrib/sasc-ng/dvbloopback/module/config-dvb/Makefile	Tue Jan 08 13:14:13 2013 +0100
+@@ -4,7 +4,7 @@
+ 
+ EXTRA_CFLAGS ?= -Idrivers/media/dvb/dvb-core/ -I$(PWD)
+ 
+-BUILD_DIR := /lib/modules/$(shell uname -r)/build
++BUILD_DIR ?= /lib/modules/$(shell uname -r)/build
+ 
+ all: clean
+ 	make -C $(BUILD_DIR) M=$(PWD) V=1 modules
