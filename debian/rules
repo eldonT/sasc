@@ -11,6 +11,9 @@ SHELL := /bin/bash
 		$(MAKE) -f debian/rules debian/control; \
 	fi
 
+override_dh_installinit:
+	dh_installinit --name sasc-ng
+
 override_dh_auto_configure:
 	# done per binary package in build-% rule
 	
