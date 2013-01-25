@@ -32,9 +32,10 @@ override_dh_auto_build:
 	cd contrib/sasc-ng; make module; make
 
 override_dh_auto_install:
-	mkdir -p $(TMP)/usr/bin
-	mkdir -p $(TMP)/lib/modules/$(kernel_name)/misc
-	mkdir -p $(TMP)/usr/lib/
-	install -m0755 contrib/sasc-ng/sasc-ng $(TMP)/usr/bin/
-	install -m0644 contrib/sasc-ng/dvbloopback.ko $(TMP)/lib/modules/$(kernel_name)/misc
-	install -m0644 contrib/sasc-ng/sc/PLUGINS/lib/* $(TMP)/usr/lib/
+	# use package.install instead
+	#mkdir -p $(TMP)/usr/bin
+	#mkdir -p $(TMP)/lib/modules/$(kernel_name)/misc
+	#mkdir -p $(TMP)/usr/lib/
+	#install -m0755 contrib/sasc-ng/sasc-ng $(TMP)/usr/bin/
+	#install -m0644 contrib/sasc-ng/dvbloopback.ko $(TMP)/lib/modules/$(kernel_name)/misc
+	#install -m0644 contrib/sasc-ng/sc/PLUGINS/lib/* $(TMP)/usr/lib/
