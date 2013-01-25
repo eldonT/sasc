@@ -1,6 +1,0 @@
-98e40a12c40e8d3088ca0f4457b4a198  debian/control
-4004570ed61be152549b6ddc265948aa  debian/control.source
-ef99cebba74aa8d065cd6af017ddb205  debian/control.flavor
-2caf747fbe7d4c0c4fae1b80213bddd9  debian/rules
-4e1c124c6a321523be4eadb07c358f4a  debian/rules.defs
-086aaa0862d6ebe62bd0b5547c8810af  debian/sasc-ng.install.in

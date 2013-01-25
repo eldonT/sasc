@@ -1,1 +1,4 @@
 .*.swp
+debian/control
+debian/control.md5sum
+debian/sasc-ng-*.install

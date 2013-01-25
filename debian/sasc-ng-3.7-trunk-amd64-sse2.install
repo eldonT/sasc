@@ -1,3 +1,0 @@
-debian/tmp/3.7-trunk-amd64-sse2/bin/* /usr/bin/
-debian/tmp/3.7-trunk-amd64-sse2/modules/* /lib/modules/3.7-trunk-amd64/misc
-debian/tmp/3.7-trunk-amd64-sse2/lib/* /usr/lib/
