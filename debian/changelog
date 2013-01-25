@@ -1,6 +1,7 @@
 sasc-ng (620-2) local; urgency=low
 
   * Fix for wrongly named init script
+  * Added copyright information (not yet complete)
 
  -- Jan-Pascal van Best <janpascal@vanbest.org>  Fri, 25 Jan 2013 22:39:40 +0100
 
