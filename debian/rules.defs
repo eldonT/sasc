@@ -2,7 +2,7 @@ KERNELS = 3.7-trunk-amd64 3.2.0-4-amd64
 KERNEL_VERSION_3.7-trunk-amd64 = 3.7.1-1~experimental.2.sasc1
 KERNEL_VERSION_3.2.0-4-amd64 = 3.2.35-2
 
-FFDECSA_FLAVORS          = sse2 #sse 
+FFDECSA_FLAVORS = sse2 #sse 
 
 # For the moment we just support amd64
 #KERNEL_FLAVORS_i386_$(DEFAULT)	+= 486

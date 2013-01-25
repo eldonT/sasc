@@ -1,3 +1,3 @@
-contrib/sasc-ng/sasc-ng /usr/bin/
-contrib/sasc-ng/dvbloopback.ko /lib/modules/#KERNEL#/misc
-contrib/sasc-ng/sc/PLUGINS/lib/* /usr/lib/
+debian/tmp/#KERNEL#-#FLAVOR#/bin/* /usr/bin/
+debian/tmp/#KERNEL#-#FLAVOR#/modules/* /lib/modules/#KERNEL#/misc
+debian/tmp/#KERNEL#-#FLAVOR#/lib/* /usr/lib/

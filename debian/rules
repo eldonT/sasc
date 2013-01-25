@@ -2,6 +2,8 @@
 
 include debian/rules.defs
 
+SHELL := /bin/bash
+
 #kernel_name = "3.7-trunk-amd64"
 #kernel_version = "3.7.1-1~experimental.2.sasc1"
 
@@ -19,21 +21,39 @@ TMP     = $(CURDIR)/debian/$(PACKAGE)
 %:
 	dh $@
 
-override_dh_gencontrol:
-	dh_gencontrol -- $(SUBSTVARS)
+#override_dh_gencontrol:
+#	dh_gencontrol -- $(SUBSTVARS)
 
 override_dh_auto_configure:
 	#cd contrib/sasc-ng; ./configure --dvb-dir=$(DVB_DIR)
 	#cp debian/config.mak-sse2 contrib/sasc-ng/config.mak
-	sed -e "s|#DVB_DIR#|$(CURDIR)/debian/includes/3.7.1/|" < debian/config.mak-sse2 > contrib/sasc-ng/config.mak
+	#sed -e "s|#DVB_DIR#|$(CURDIR)/debian/includes/3.7.1/|" < debian/config.mak-sse2 > contrib/sasc-ng/config.mak
 	
 override_dh_auto_clean:
 	cd contrib/sasc-ng; if [ -r config.mak ]; then make clean module_clean; fi
+	#rm -rf debian/tmp
 	
 override_dh_auto_build:
-	cd contrib/sasc-ng; make module; make
+	#cd contrib/sasc-ng; make module; make
 
-override_dh_auto_install:
+# build_(kernel)_(flavor), e.g. build_3.7.trunk-amd64_sse2
+build_%:
+	VERSION="$*"; \
+	FLAVOR=$${VERSION#*_}; \
+	KERNEL=$${VERSION/_$$FLAVOR/}; \
+	sed -e "s|#DVB_DIR#|$(CURDIR)/debian/includes/$$KERNEL/|" < debian/config.mak-$$FLAVOR > contrib/sasc-ng/config.mak; \
+	echo "Building $$VERSION - $$FLAVOR"; \
+	cd contrib/sasc-ng; \
+	make module; \
+	make; \
+	mkdir -p $(CURDIR)/debian/tmp/$$KERNEL-$$FLAVOR/bin; \
+	mkdir -p $(CURDIR)/debian/tmp/$$KERNEL-$$FLAVOR/modules; \
+	mkdir -p $(CURDIR)/debian/tmp/$$KERNEL-$$FLAVOR/lib; \
+	install -m0755 sasc-ng $(CURDIR)/debian/tmp/$$KERNEL-$$FLAVOR/bin/; \
+	install -m0644 dvbloopback.ko $(CURDIR)/debian/tmp/$$KERNEL-$$FLAVOR/modules; \
+	install -m0644 sc/PLUGINS/lib/* $(CURDIR)/debian/tmp/$$KERNEL-$$FLAVOR/lib/
+
+override_dh_auto_install: $(foreach kernel,$(KERNELS),$(foreach flav,$(FFDECSA_FLAVORS),build_$(kernel)_$(flav)))
 	# use package.install instead
 	#mkdir -p $(TMP)/usr/bin
 	#mkdir -p $(TMP)/lib/modules/$(kernel_name)/misc
@@ -42,7 +62,7 @@ override_dh_auto_install:
 	#install -m0644 contrib/sasc-ng/dvbloopback.ko $(TMP)/lib/modules/$(kernel_name)/misc
 	#install -m0644 contrib/sasc-ng/sc/PLUGINS/lib/* $(TMP)/usr/lib/
 
-CONTROL_FILES    = debian/control.source debian/control.flavor debian/rules debian/rules.defs
+CONTROL_FILES    = debian/control.source debian/control.flavor debian/rules debian/rules.defs debian/sasc-ng.install.in
 comma            = ,
 
 debian/control: $(CONTROL_FILES)
@@ -68,6 +88,7 @@ endef
 # call with $1 = kernel version, $2 = flavor
 define create-flavor-install
 	 sed -e 's/#KERNEL#/$1/g' \
+	     -e 's/#FLAVOR#/$2/g' \
 		debian/sasc-ng.install.in > debian/sasc-ng-$1-$2.install
 
 endef
