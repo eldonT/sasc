@@ -1,0 +1,16 @@
+KERNELS = 3.7-trunk-amd64 3.2.0-4-amd64
+KERNEL_VERSION_3.7-trunk-amd64 = 3.7.1-1~experimental.2.sasc1
+KERNEL_VERSION_3.2.0-4-amd64 = 3.2.35-2
+
+FFDECSA_FLAVORS          = sse2 #sse 
+
+# For the moment we just support amd64
+#KERNEL_FLAVORS_i386_$(DEFAULT)	+= 486
+#KERNEL_FLAVORS_i386_$(DEFAULT)	+= 686 686-bigmem amd64
+#KERNEL_FLAVORS_i386_$(OPENVZ)	+= openvz-686
+#KERNEL_FLAVORS_i386_$(VSERVER)	+= vserver-686 vserver-686-bigmem
+#KERNEL_FLAVORS_i386_$(XEN)	+= xen-686
+#KERNEL_FLAVORS_amd64_$(DEFAULT)	+= amd64
+#KERNEL_FLAVORS_amd64_$(OPENVZ)	+= openvz-amd64
+#KERNEL_FLAVORS_amd64_$(VSERVER)	+= vserver-amd64
+#KERNEL_FLAVORS_amd64_$(XEN)	+= xen-amd64

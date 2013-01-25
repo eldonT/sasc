@@ -1,0 +1,16 @@
+Source: sasc-ng
+Section: devel
+Priority: extra
+Maintainer: Jan-Pascal van Best <janpascal@vanbest.org>
+Standards-Version: 3.9.4
+Build-Depends: debhelper (>= 8), #LINUX_HEADERS#
+
+Package: sasc-ng-common
+Architecture: all
+Depends: ${misc:Depends}, sasc-ng-daemon
+Description: softcam to help decode DVB streams
+ sasc-ng is a versatile SoftCAM which creates virtual DVB devices 
+ and outputs through them.
+ . 
+ This package contains common files for the sasc-ng daemon
+

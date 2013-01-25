@@ -3,12 +3,11 @@ Section: devel
 Priority: extra
 Maintainer: Jan-Pascal van Best <janpascal@vanbest.org>
 Standards-Version: 3.9.4
-#Build-Depends: debhelper (>= 5), ${kver:BuildDepends}
-Build-Depends: debhelper (>= 8)
+Build-Depends: debhelper (>= 8), linux-headers-3.7-trunk-amd64 (=3.7.1-1~experimental.2.sasc1), linux-headers-3.2.0-4-amd64 (=3.2.35-2),
 
 Package: sasc-ng-common
 Architecture: all
-Depends: ${misc:Depends}, sasc-ng-daemon (=${binary:Version})
+Depends: ${misc:Depends}, sasc-ng-daemon
 Description: softcam to help decode DVB streams
  sasc-ng is a versatile SoftCAM which creates virtual DVB devices 
  and outputs through them.
@@ -17,12 +16,31 @@ Description: softcam to help decode DVB streams
 
 Package: sasc-ng-3.7-trunk-amd64-sse2
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${kver:Depends},
- sasc-ng-common (=${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends},
+ sasc-ng-common (=${binary:Version}),
+ linux-image-3.7-trunk-amd64 (=3.7.1-1~experimental.2.sasc1)
 Conflicts: sasc-ng-daemon
 Replaces: sasc-ng-daemon
 Provides: sasc-ng-daemon
 Description: softcam to help decode DVB streams
  sasc-ng is a versatile SoftCAM which creates virtual DVB devices 
  and outputs through them.
+ .
+ This package contains the sasc-ng daemon and the dvbloopback
+ kernel module for kernel 3.7-trunk-amd64.
+
+Package: sasc-ng-3.2.0-4-amd64-sse2
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+ sasc-ng-common (=${binary:Version}),
+ linux-image-3.2.0-4-amd64 (=3.2.35-2)
+Conflicts: sasc-ng-daemon
+Replaces: sasc-ng-daemon
+Provides: sasc-ng-daemon
+Description: softcam to help decode DVB streams
+ sasc-ng is a versatile SoftCAM which creates virtual DVB devices 
+ and outputs through them.
+ .
+ This package contains the sasc-ng daemon and the dvbloopback
+ kernel module for kernel 3.2.0-4-amd64.
 

@@ -1,16 +1,18 @@
 #!/usr/bin/make -f
 
-kernel_name = "3.7-trunk-amd64"
-kernel_version = "3.7.1-1~experimental.2.sasc1"
+include debian/rules.defs
 
-DVB_DIR=/home/janpascal/src/tmp/linux/linux-3.7.1
+#kernel_name = "3.7-trunk-amd64"
+#kernel_version = "3.7.1-1~experimental.2.sasc1"
+
+#DVB_DIR=/home/janpascal/src/tmp/linux/linux-3.7.1
 
 PACKAGE = $(firstword $(shell dh_listpackages))
 TMP     = $(CURDIR)/debian/$(PACKAGE)
 
-SUBSTVARS = \
- -Vkver:Depends="linux-image-$(kernel_name) (=$(kernel_version))" \
- -Vkver:BuildDepends="linux-headers-$(kernel_name) (=$(kernel_version))"
+#SUBSTVARS = \
+# -Vkver:Depends="linux-image-$(kernel_name) (=$(kernel_version))" \
+# -Vkver:BuildDepends="linux-headers-$(kernel_name) (=$(kernel_version))"
 
 #SUBSTVARS = -Vkver:BuildDepends="foo (>= 2)"
 
@@ -39,3 +41,52 @@ override_dh_auto_install:
 	#install -m0755 contrib/sasc-ng/sasc-ng $(TMP)/usr/bin/
 	#install -m0644 contrib/sasc-ng/dvbloopback.ko $(TMP)/lib/modules/$(kernel_name)/misc
 	#install -m0644 contrib/sasc-ng/sc/PLUGINS/lib/* $(TMP)/usr/lib/
+
+CONTROL_FILES    = debian/control.source debian/control.flavor debian/rules debian/rules.defs
+comma            = ,
+
+debian/control: $(CONTROL_FILES)
+ifeq ($(wildcard debian/control.md5sum),)
+	$(MAKE) -f debian/rules debian/control-real
+else
+	md5sum --check debian/control.md5sum --status || \
+		$(MAKE) -f debian/rules debian/control-real
+endif
+
+LINUX_HEADERS    =$(foreach f,$(KERNELS),linux-headers-$(f) (=$(KERNEL_VERSION_$(f)))$(comma))
+
+# call with $1 = kernel version, $2 = full kernel version, $3 = flavor
+define append-flavor-entries
+	sed \
+		-e 's/#KERNEL#/$1/g' \
+		-e 's/#KERNEL_VERSION#/$2/g' \
+		-e 's/#FLAVOR#/$3/g' \
+		debian/control.flavor >> debian/control.tmp
+
+endef
+
+# call with $1 = kernel version, $2 = flavor
+define create-flavor-install
+	 sed -e 's/#KERNEL#/$1/g' \
+		debian/sasc-ng.install.in > debian/sasc-ng-$1-$2.install
+
+endef
+
+debian/control-real: $(CONTROL_FILES)
+	sed \
+		-e 's/#LINUX_HEADERS#/$(LINUX_HEADERS)/g' \
+		debian/control.source > debian/control.tmp
+	$(foreach f,$(KERNELS),$(call append-flavor-entries,$(f),$(KERNEL_VERSION_$(f)),sse2))
+	#$(foreach f,$(KERNEL_FLAVORS_only_i386),$(call append-flavor-entries,$(KERNEL_VERSION),$(f),i386))
+	#$(foreach f,$(KERNEL_FLAVORS_only_amd64),$(call append-flavor-entries,$(KERNEL_VERSION),$(f),amd64))
+	mv debian/control.tmp debian/control
+	$(foreach kernel,$(KERNELS),$(foreach flav,$(FFDECSA_FLAVORS),$(call create-flavor-install,$(kernel),$(flav))))
+	md5sum debian/control $^ > debian/control.md5sum
+	@echo
+	@echo This target is made to fail intentionally, to make sure
+	@echo that it is NEVER run during the automated build. Please
+	@echo ignore the following error, the debian/control file has
+	@echo been generated SUCCESSFULLY.
+	@echo
+	exit 1
+
