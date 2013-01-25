@@ -1,0 +1,15 @@
+# Default settings for sasc-ng. This file is sourced by /bin/sh from
+# /etc/init.d/sasc-ng-common.
+
+PIDFILE=/var/run/$NAME.pid
+LOGFILE=/var/log/$NAME.log
+
+ADDITIONAL_DVBLOOPBACK_PARAMS="adapter_nr=1"
+
+NUM_LOOPBACK_ADAPTERS=1
+DAEMON_JOIN_ARGS="--join 0:1"
+DEBUG_MASK=0
+
+# Using a log file seems to cause segfaults, use syslog instead
+#DAEMON_ARGS="$DAEMON_JOIN_ARGS --cam-budget --cam-dir /etc/sasc-ng --sid-filt 12 --sid-allpid --sid-nocache --buffer 8M --sid-experimental --daemon --pidfile $PIDFILE --debug $DEBUG_MASK --log $LOGFILE"
+DAEMON_ARGS="$DAEMON_JOIN_ARGS --cam-budget --cam-dir /etc/sasc-ng --sid-filt 12 --sid-allpid --sid-nocache --buffer 8M --sid-experimental --daemon --pidfile $PIDFILE --debug $DEBUG_MASK"

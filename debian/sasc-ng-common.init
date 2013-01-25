@@ -1,13 +1,12 @@
 #! /bin/sh
+
 ### BEGIN INIT INFO
 # Provides:          sasc-ng
-# Required-Start:
-# Required-Stop:
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: sasc-ng initscript
-# Description:       sasc-ng init script to start the sasc-ng daemon
-#
+# Short-Description: sasc-ng DVB decryption loopback device
 ### END INIT INFO
 
 # Author: Hein Rigolo <rigolo@gmail.com>
@@ -19,29 +18,13 @@
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="sasc-ng"
 NAME=sasc-ng
-DAEMON=/usr/local/bin/$NAME
-PIDFILE=/var/run/$NAME.pid
-LOGFILE=/var/log/$NAME.log
-DEBUG_MASK=0
-#DEBUG_MASK=0xffffffcf
-
-NUM_LOOPBACK_ADAPTERS=3
-DAEMON_JOIN_ARGS="--join 0:3 --join 1:4 --join 2:5"
-#NUM_LOOPBACK_ADAPTERS=3
-#DAEMON_JOIN_ARGS="--join 0:3"
-ADDITIONAL_DVBLOOPBACK_PARAMS="adapter_nr=3"
-
-#DAEMON_ARGS="--join 0:3 --join 1:4 --join 2:5 --cam-budget --cam-dir /etc/sasc-ng --sid-filt 12 --sid-allpid --sid-nocache --buffer 8M --daemon --pidfile $PIDFILE --log $LOGFILE"
-#DAEMON_ARGS="--join 0:1 --cam-budget --cam-dir /etc/sasc-ng --sid-filt 12 --sid-allpid --sid-nocache --buffer 8M --daemon --pidfile $PIDFILE --log $LOGFILE"
-#DAEMON_ARGS="--join 0:2 --join 1:3 --cam-budget --cam-dir /etc/sasc-ng --sid-filt 12 --sid-allpid --sid-nocache --buffer 8M --sid-experimental --daemon --pidfile $PIDFILE --debug 0 --log $LOGFILE"
-#DAEMON_ARGS="--join 0:3 --join 1:4 --join 2:5 --cam-budget --cam-dir /etc/sasc-ng --sid-filt 12 --sid-allpid --sid-nocache --buffer 8M --sid-experimental --daemon --pidfile $PIDFILE --debug 0 --log $LOGFILE"
-#DAEMON_ARGS="$DAEMON_JOIN_ARGS --cam-budget --cam-dir /etc/sasc-ng --sid-filt 12 --sid-allpid --sid-nocache --buffer 8M --sid-experimental --daemon --pidfile $PIDFILE --debug $DEBUG_MASK --log $LOGFILE"
-DAEMON_ARGS="$DAEMON_JOIN_ARGS --cam-budget --cam-dir /etc/sasc-ng --sid-filt 12 --sid-allpid --sid-nocache --buffer 8M --sid-experimental --daemon --pidfile $PIDFILE --debug $DEBUG_MASK"
-SCRIPTNAME=/etc/init.d/$NAME
-INIT_VERBOSE=yes
+DAEMON=/usr/sbin/$NAME
+SCRIPTNAME=/etc/init.d/sasc-ng-common
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
+
+# TODO: check for proper kernel version
 
 # Read configuration variable file if it is present
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
@@ -69,7 +52,6 @@ do_start()
         start-stop-daemon --start --pidfile $PIDFILE --exec $DAEMON --test  \
                 || return 1
         logrotate -f /etc/logrotate.d/sasc-ng
-	ulimit -c unlimited
         start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON -- \
                 $DAEMON_ARGS >> $LOGFILE 2>&1 \
                 || return 2
