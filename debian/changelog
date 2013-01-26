@@ -1,3 +1,9 @@
+sasc-ng (620-4) local; urgency=low
+
+  * Bump
+
+ -- Jan-Pascal van Best <janpascal@vanbest.org>  Sat, 26 Jan 2013 21:40:02 +0100
+
 sasc-ng (620-3) local; urgency=low
 
   * Added dependency on libssl
