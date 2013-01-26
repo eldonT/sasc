@@ -1,7 +1,7 @@
 Package: sasc-ng-#KERNEL#-#FLAVOR#
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
- sasc-ng-common (=${binary:Version}),
+ sasc-ng-common (=${source:Version}),
  linux-image-#KERNEL# (=#KERNEL_VERSION#)
 Conflicts: sasc-ng-daemon
 Replaces: sasc-ng-daemon
