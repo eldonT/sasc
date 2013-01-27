@@ -1,0 +1,10 @@
+/var/log/sasc-ng.log {
+       daily
+       rotate 7
+       delaycompress
+       compress
+       missingok
+       postrotate 
+       [ ! -f /var/run/sasc-ng.pid ] || kill -HUP `cat /var/run/sasc-ng.pid`
+       endscript
+}
