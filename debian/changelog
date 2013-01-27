@@ -1,8 +1,12 @@
 sasc-ng (620-4) local; urgency=low
 
-  * Bump
+  * Add logrotate script (fixes install error because init script needs it)
+  * Fixes for init script:
+    - Check dvbloopback module availability
+    - Check kernel version contains 'sasc'
+    - Do not exit with error condition set
 
- -- Jan-Pascal van Best <janpascal@vanbest.org>  Sat, 26 Jan 2013 21:40:02 +0100
+ -- Jan-Pascal van Best <janpascal@vanbest.org>  Sun, 27 Jan 2013 16:57:50 +0100
 
 sasc-ng (620-3) local; urgency=low
 
