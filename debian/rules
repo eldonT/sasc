@@ -24,6 +24,11 @@ override_dh_auto_clean:
 	cd contrib/sasc-ng; if [ -r config.mak ]; then make clean module_clean; fi
 	rm -f contrib/sasc-ng/dvbloopback.o
 	rm -f contrib/sasc-ng/config.mak
+	rm -f contrib/sasc-ng/dvbloopback.ko
+	rm -rf contrib/sasc-ng/sc/PLUGINS/src/sc-src/.pc
+	rm -f contrib/sasc-ng/sc/PLUGINS/src/sc-src/.dependencies 
+	rm -f .dependencies 
+	rm -rf contrib/sasc-ng/sc/locale
 	
 override_dh_auto_build:
 	#cd contrib/sasc-ng; make module; make

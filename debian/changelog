@@ -2,7 +2,7 @@ sasc-ng (620-6) local; urgency=low
 
   * More specific CPU optimisations: atom, core2, athlon64 
 
- -- Jan-Pascal van Best <janpascal@vanbest.org>  Mon, 28 Jan 2013 12:40:04 +0100
+ -- Jan-Pascal van Best <janpascal@vanbest.org>  Mon, 28 Jan 2013 23:16:47 +0100
 
 sasc-ng (620-5) local; urgency=low
 
