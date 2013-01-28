@@ -5,6 +5,6 @@
        compress
        missingok
        postrotate 
-       [ ! -f /var/run/sasc-ng.pid ] || kill -HUP `cat /var/run/sasc-ng.pid`
+       # [ ! -f /var/run/sasc-ng.pid ] || kill -HUP `cat /var/run/sasc-ng.pid`
        endscript
 }
