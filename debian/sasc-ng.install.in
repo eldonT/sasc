@@ -1,3 +1,12 @@
 debian/tmp/#KERNEL#-#FLAVOR#/bin/* /usr/sbin/
 debian/tmp/#KERNEL#-#FLAVOR#/modules/* /lib/modules/#KERNEL#/misc
 debian/tmp/#KERNEL#-#FLAVOR#/lib/* /usr/lib/
+examples/cardclient.conf.example /etc/sasc-ng/
+examples/cardslot.conf.example   /etc/sasc-ng/ 
+examples/externalau.sh.example   /etc/sasc-ng/
+examples/override.conf.example   /etc/sasc-ng/
+examples/smartcard.conf.example  /etc/sasc-ng/
+examples/SoftCam.Key  /etc/sasc-ng/
+examples/Ird-Beta.KID /etc/sasc-ng/
+examples/Seca.KID     /etc/sasc-ng/
+examples/Viaccess.KID /etc/sasc-ng/
