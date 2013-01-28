@@ -1,0 +1,4 @@
+# FFdecsa configuration for Intel Atom cpus
+FFDECSA_OPTS = "FLAGS=-O3 -fexpensive-optimizations -funroll-loops -mmmx -msse -msse2 -march=atom" PARALLEL_MODE=PARALLEL_128_SSE2 COMPILER=g++-4.6
+DVB_DIR=#DVB_DIR#
+CXX=g++-4.6

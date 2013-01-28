@@ -22,6 +22,8 @@ override_dh_auto_configure:
 	
 override_dh_auto_clean:
 	cd contrib/sasc-ng; if [ -r config.mak ]; then make clean module_clean; fi
+	rm -f contrib/sasc-ng/dvbloopback.o
+	rm -f contrib/sasc-ng/config.mak
 	
 override_dh_auto_build:
 	#cd contrib/sasc-ng; make module; make
@@ -34,8 +36,8 @@ build_%:
 	sed -e "s|#DVB_DIR#|$(CURDIR)/debian/includes/$$KERNEL/|" < debian/config.mak-$$FLAVOR > contrib/sasc-ng/config.mak; \
 	echo "Building $$VERSION - $$FLAVOR"; \
 	cd contrib/sasc-ng; \
-	make module; \
-	make; \
+	make module CC=gcc-4.6 CXX=g++-4.6; \
+	make CC=gcc-4.6 CXX=g++-4.6; \
 	mkdir -p $(CURDIR)/debian/tmp/$$KERNEL-$$FLAVOR/bin; \
 	mkdir -p $(CURDIR)/debian/tmp/$$KERNEL-$$FLAVOR/modules; \
 	mkdir -p $(CURDIR)/debian/tmp/$$KERNEL-$$FLAVOR/lib; \
@@ -83,7 +85,7 @@ debian/control-real: $(CONTROL_FILES)
 	sed \
 		-e 's/#LINUX_HEADERS#/$(LINUX_HEADERS)/g' \
 		debian/control.source > debian/control.tmp
-	$(foreach f,$(KERNELS),$(call append-flavor-entries,$(f),$(KERNEL_VERSION_$(f)),sse2))
+	$(foreach kernel,$(KERNELS),$(foreach flav,$(FFDECSA_FLAVORS),$(call append-flavor-entries,$(kernel),$(KERNEL_VERSION_$(kernel)),$(flav))))
 	mv debian/control.tmp debian/control
 	$(foreach kernel,$(KERNELS),$(foreach flav,$(FFDECSA_FLAVORS),$(call create-flavor-install,$(kernel),$(flav))))
 	md5sum debian/control $^ > debian/control.md5sum
