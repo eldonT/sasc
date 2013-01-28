@@ -2,8 +2,10 @@ sasc-ng (620-5) local; urgency=low
 
   * Added example configuration files
   * Fix for logrotate crashing sasc-ng process
+  * Add commented-out CONFIGURED variable in /etc/default/sasc-ng
+  * Init scripts gives more detailed messages when not starting daemon
 
- -- Jan-Pascal van Best <janpascal@vanbest.org>  Mon, 28 Jan 2013 09:32:21 +0100
+ -- Jan-Pascal van Best <janpascal@vanbest.org>  Mon, 28 Jan 2013 09:44:27 +0100
 
 sasc-ng (620-4) local; urgency=low
 

@@ -19,21 +19,36 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="sasc-ng"
 NAME=sasc-ng
 DAEMON=/usr/sbin/$NAME
-SCRIPTNAME=/etc/init.d/sasc-ng-common
+SCRIPTNAME=/etc/init.d/$NAME
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
 
 # Exit if the module is not available
-modprobe --dry-run --quiet dvbloopback || exit 0
+modprobe --dry-run --quiet dvbloopback || {
+  echo "Error: dvbloopback module not found"
+  echo "Please install the sasc-ng-daemon package for your"
+  echo "current kernel"
+  exit 0
+}
 
 # Exit if the kernel has no 'sasc' in its version name,
 # indicating it's not patched for sasc
 # TODO: check for exact kernel version
-uname -v | grep -q sasc || exit 0
+uname -v | grep -q sasc || {
+  echo "Error: Not running a kernel patched for sasc-ng"
+  echo "Please reboot into a kernel with sasc in its version string"
+  exit 0
+}
 
 # Read configuration variable file if it is present
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
+
+if [ "$CONFIGURED" != "yes" ]; then
+  echo "Error: sasc-ng not configured, exiting"
+  echo "Please modify the files in /etc/sasc-ng and /etc/default/sasc-ng"
+  exit 0
+fi
 
 # Load the VERBOSE setting and other rcS variables
 . /lib/init/vars.sh
