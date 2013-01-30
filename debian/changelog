@@ -1,3 +1,9 @@
+sasc-ng (620-7) local; urgency=low
+
+  * Added corei5 optimisation (for my own machine ;-)
+
+ -- Jan-Pascal van Best <janpascal@vanbest.org>  Wed, 30 Jan 2013 10:40:58 +0100
+
 sasc-ng (620-6) local; urgency=low
 
   * More specific CPU optimisations: atom, core2, athlon64 

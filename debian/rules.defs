@@ -1,7 +1,7 @@
 KERNELS = 3.7-trunk-amd64
 KERNEL_VERSION_3.7-trunk-amd64 = 3.7.1-1~experimental.2.sasc1
 
-FFDECSA_FLAVORS = core2 athlon64 atom #sse 
+FFDECSA_FLAVORS = core2 athlon64 atom corei5
 
 # For the moment we just support amd64
 # .. so pentium4 is useless?
