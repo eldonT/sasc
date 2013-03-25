@@ -30,15 +30,15 @@ override_dh_auto_clean:
 	rm -f .dependencies 
 	rm -rf contrib/sasc-ng/sc/locale
 	
-override_dh_auto_build:
-	#cd contrib/sasc-ng; make module; make
+# build_(kernel)_(flavor), e.g. build_3.7-trunk-amd64_sse2
+# build_kernel needs to happen before build_sasc because build_sasc need
+# dvbdev.h which is provided by build_kernel!
 
-# build_(kernel)_(flavor), e.g. build_3.7.trunk-amd64_sse2
-build_%:
+build_sasc_%:
 	VERSION="$*"; \
 	FLAVOR=$${VERSION#*_}; \
 	KERNEL=$${VERSION/_$$FLAVOR/}; \
-	sed -e "s|#DVB_DIR#|$(CURDIR)/debian/includes/$$KERNEL/|" < debian/config.mak-$$FLAVOR > contrib/sasc-ng/config.mak; \
+	sed -e "s|#DVB_DIR#|$(CURDIR)/debian/tmp/include/$$KERNEL/|" < debian/config.mak-$$FLAVOR > contrib/sasc-ng/config.mak; \
 	echo "Building $$VERSION - $$FLAVOR"; \
 	cd contrib/sasc-ng; \
 	make module CC=gcc-4.6 CXX=g++-4.6; \
@@ -52,8 +52,35 @@ build_%:
 	make module_clean; \
 	make clean
 
-override_dh_auto_install: $(foreach kernel,$(KERNELS),$(foreach flav,$(FFDECSA_FLAVORS),build_$(kernel)_$(flav)))
-	# use (package).install instead
+# build_kernel_(kernel), e.g. build_kernel_3.7-trunk-amd64
+build_kernel_%:
+	VERSION="$*"; \
+	KERNEL=$${VERSION#*_}; \
+	SHORT_KERNEL=$${KERNEL%%-*}; \
+	KERNEL_TARBALL=/usr/src/linux-source-$${SHORT_KERNEL}.tar.bz2; \
+	BUILD_DIR=/lib/modules/$${KERNEL}/build; \
+	echo "Building patched dvb-core module for kernel $${KERNEL}"; \
+	tmpdir=$(CURDIR)/debian/tmp-$${SHORT_KERNEL}; \
+	mkdir -p $$tmpdir; \
+	tar xjf $${KERNEL_TARBALL} -C $${tmpdir} --strip-components 4 linux-source-$${SHORT_KERNEL}/drivers/media/dvb-core/; \
+	patch -p4 -d $${tmpdir} < $(CURDIR)/debian/linux-3.7.1-dvb-mutex.patch; \
+	make -C $${BUILD_DIR} M=$${tmpdir} modules; \
+	mkdir -p $(CURDIR)/debian/tmp/$$KERNEL/module-updates; \
+	mkdir -p $(CURDIR)/debian/tmp/include/$$KERNEL/; \
+	cp $${tmpdir}/dvb-core.ko $(CURDIR)/debian/tmp/$$KERNEL/module-updates/; \
+	cp $${tmpdir}/dvbdev.h $(CURDIR)/debian/tmp/include/$$KERNEL/; \
+	rm -rf $${tmpdir}
+
+.PHONY: build_kernel
+build_kernel: $(foreach kernel,$(KERNELS),build_kernel_$(kernel))
+
+.PHONY: build_sasc
+build_sasc: $(foreach kernel,$(KERNELS),$(foreach flav,$(FFDECSA_FLAVORS),build_sasc_$(kernel)_$(flav))) 
+
+override_dh_auto_build:
+	# Do nothing
+
+override_dh_auto_install: build_kernel build_sasc
 
 CONTROL_FILES    = debian/control.source debian/control.flavor debian/rules debian/rules.defs debian/sasc-ng.install.in
 comma            = ,
@@ -66,7 +93,13 @@ else
 		$(MAKE) -f debian/rules debian/control-real
 endif
 
+define kernel_short_version
+$(shell echo $1|sed -e's/-.*//')
+endef
+
 LINUX_HEADERS    =$(foreach f,$(KERNELS),linux-headers-$(f) (=$(KERNEL_VERSION_$(f)))$(comma))
+#LINUX_SOURCES    =$(foreach f,$(KERNELS),linux-source-$(KERNEL_VERSION_SHORT_$f) (=$(KERNEL_VERSION_$(f)))$(comma))
+LINUX_SOURCES    =$(foreach f,$(KERNELS),linux-source-$(call kernel_short_version,$(f)) (=$(KERNEL_VERSION_$(f)))$(comma))
 
 # call with $1 = kernel version, $2 = full kernel version, $3 = flavor
 define append-flavor-entries
@@ -86,9 +119,11 @@ define create-flavor-install
 
 endef
 
+
 debian/control-real: $(CONTROL_FILES)
 	sed \
 		-e 's/#LINUX_HEADERS#/$(LINUX_HEADERS)/g' \
+		-e 's/#LINUX_SOURCES#/$(LINUX_SOURCES)/g' \
 		debian/control.source > debian/control.tmp
 	$(foreach kernel,$(KERNELS),$(foreach flav,$(FFDECSA_FLAVORS),$(call append-flavor-entries,$(kernel),$(KERNEL_VERSION_$(kernel)),$(flav))))
 	mv debian/control.tmp debian/control

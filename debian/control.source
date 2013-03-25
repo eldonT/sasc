@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: Jan-Pascal van Best <janpascal@vanbest.org>
 Standards-Version: 3.9.4
 Build-Depends: debhelper (>= 8), libssl-dev (>= 1.0), gcc-4.6, g++-4.6,
- #LINUX_HEADERS#
+ #LINUX_HEADERS#, #LINUX_SOURCES#
 
 Package: sasc-ng-common
 Architecture: all

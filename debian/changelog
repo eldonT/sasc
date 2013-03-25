@@ -1,3 +1,12 @@
+sasc-ng (620-8) local; urgency=low
+
+  * Build patched dvb-core.ko module from the standard kernel in this package,
+    and place it in /lib/modules/*/updates. 
+  * Remove dependency on patched kernel, depend on default kernel instead
+  * Build for 3.8-trunk kernel instead of 3.7-trunk
+
+ -- Jan-Pascal van Best <janpascal@vanbest.org>  Tue, 26 Mar 2013 11:20:20 +0100
+
 sasc-ng (620-7) local; urgency=low
 
   * Added corei5 optimisation (for my own machine ;-)

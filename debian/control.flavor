@@ -11,5 +11,5 @@ Description: softcam to help decode DVB streams
  and outputs through them.
  .
  This package contains the sasc-ng daemon and the dvbloopback
- kernel module for kernel #KERNEL#.
+ kernel module for kernel #KERNEL#, optimised for #FLAVOR# cpus.
 

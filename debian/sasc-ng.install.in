@@ -1,6 +1,7 @@
 debian/tmp/#KERNEL#-#FLAVOR#/bin/* /usr/sbin/
 debian/tmp/#KERNEL#-#FLAVOR#/modules/* /lib/modules/#KERNEL#/misc
 debian/tmp/#KERNEL#-#FLAVOR#/lib/* /usr/lib/
+debian/tmp/#KERNEL#/module-updates/* /lib/modules/#KERNEL#/updates
 examples/cardclient.conf.example /etc/sasc-ng/
 examples/cardslot.conf.example   /etc/sasc-ng/ 
 examples/externalau.sh.example   /etc/sasc-ng/
