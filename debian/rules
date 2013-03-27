@@ -38,10 +38,12 @@ build_sasc_%:
 	VERSION="$*"; \
 	FLAVOR=$${VERSION#*_}; \
 	KERNEL=$${VERSION/_$$FLAVOR/}; \
-	sed -e "s|#DVB_DIR#|$(CURDIR)/debian/tmp/include/$$KERNEL/|" < debian/config.mak-$$FLAVOR > contrib/sasc-ng/config.mak; \
-	echo "Building $$VERSION - $$FLAVOR"; \
+	BUILD_DIR=/lib/modules/$${KERNEL}/build; \
+	sed -e "s|#DVB_DIR#|$(CURDIR)/debian/tmp/include/$$KERNEL/|" \
+            < debian/config.mak-$$FLAVOR > contrib/sasc-ng/config.mak; \
+	echo "Building sasc-ng $$VERSION - $$FLAVOR"; \
 	cd contrib/sasc-ng; \
-	make module CC=gcc-4.6 CXX=g++-4.6; \
+	make module CC=gcc-4.6 CXX=g++-4.6 BUILD_DIR=$${BUILD_DIR}; \
 	make CC=gcc-4.6 CXX=g++-4.6; \
 	mkdir -p $(CURDIR)/debian/tmp/$$KERNEL-$$FLAVOR/bin; \
 	mkdir -p $(CURDIR)/debian/tmp/$$KERNEL-$$FLAVOR/modules; \

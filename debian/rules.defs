@@ -1,6 +1,5 @@
 KERNELS = 3.8-trunk-amd64
 KERNEL_VERSION_3.8-trunk-amd64 = 3.8.3-1~experimental.1
-
 FFDECSA_FLAVORS = core2 athlon64 atom corei5
 
 # For the moment we just support amd64
