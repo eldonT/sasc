@@ -1,2 +1,3 @@
 always-assume-recent-kernel.patch
 use-proper-kernel-header-locations.patch
+use-ldflags-in-makefiles.patch

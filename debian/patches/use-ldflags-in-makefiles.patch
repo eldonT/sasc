@@ -1,0 +1,13 @@
+diff --git a/contrib/sasc-ng/Makefile b/contrib/sasc-ng/Makefile
+index aacd598..9c14bd1 100644
+--- a/contrib/sasc-ng/Makefile
++++ b/contrib/sasc-ng/Makefile
+@@ -62,7 +62,7 @@ LIBS = -lpthread -lcrypto -lcrypt
+ all: $(TOOL) libscanwrap.so
+ 
+ $(TOOL): $(OBJS) | sc-plugin
+-	$(CXX) $(CFLAGS) -o $(TOOL) $(SCLIBS) $(OBJS) $(LIBS)
++	$(CXX) $(CXXFLAGS) $(CFLAGS) -o $(TOOL) $(SCLIBS) $(OBJS) $(LIBS) $(LDFLAGS)
+ 
+ libscanwrap.so: dvblb_plugins/scanwrap.c
+ 	$(CC) -fPIC -g -O2 -Wall -I. -nostdlib -shared -o $@ $< -ldl  -lc
