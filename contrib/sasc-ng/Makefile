@@ -62,7 +62,7 @@ LIBS = -lpthread -lcrypto -lcrypt
 all: $(TOOL) libscanwrap.so
 
 $(TOOL): $(OBJS) | sc-plugin
-	$(CXX) $(CFLAGS) -o $(TOOL) $(SCLIBS) $(OBJS) $(LIBS) $(LDFLAGS)
+	$(CXX) $(CFLAGS) -o $(TOOL) $(SCLIBS) $(OBJS) $(LIBS)
 
 libscanwrap.so: dvblb_plugins/scanwrap.c
 	$(CC) -fPIC -g -O2 -Wall -I. -nostdlib -shared -o $@ $< -ldl  -lc
