@@ -1,3 +1,9 @@
+sasc-ng (620-10) local; urgency=low
+
+  * Hardening
+
+ -- Jan-Pascal van Best <janpascal@vanbest.org>  Fri, 29 Mar 2013 09:06:19 +0100
+
 sasc-ng (620-9) local; urgency=low
 
   * Fix for building for a kernel that is not currently running 

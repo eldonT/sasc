@@ -4,6 +4,11 @@ include debian/rules.defs
 
 SHELL := /bin/bash
 
+CPPFLAGS:=$(shell dpkg-buildflags --get CPPFLAGS)
+CFLAGS:=$(shell dpkg-buildflags --get CFLAGS)
+CXXFLAGS:=$(shell dpkg-buildflags --get CXXFLAGS)
+LDFLAGS:=$(shell dpkg-buildflags --get LDFLAGS)
+
 %:
 	if [ -e debian/control ]; then \
 		dh $@; \
@@ -48,7 +53,7 @@ build_sasc_%:
 	echo "Building sasc-ng $$VERSION - $$FLAVOR"; \
 	cd contrib/sasc-ng; \
 	make module CC=gcc-4.6 CXX=g++-4.6 BUILD_DIR=$${BUILD_DIR}; \
-	make CC=gcc-4.6 CXX=g++-4.6; \
+	make CC=gcc-4.6 CXX=g++-4.6 CPPFLAGS="$(CPPFLAGS)" CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)"; \
 	mkdir -p $(CURDIR)/debian/tmp/$$KERNEL-$$FLAVOR/bin; \
 	mkdir -p $(CURDIR)/debian/tmp/$$KERNEL-$$FLAVOR/modules; \
 	mkdir -p $(CURDIR)/debian/tmp/$$KERNEL-$$FLAVOR/lib; \
