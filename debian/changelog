@@ -1,8 +1,10 @@
 sasc-ng (620-11) local; urgency=low
 
   * Provide debug symbols in -dbg packages
+  * Add patch to fix tuner lock bug from 
+    http://dolot.kipdola.com/wiki/Install_SASC-NG#Configuring_and_compiling
 
- -- Jan-Pascal van Best <janpascal@vanbest.org>  Tue, 02 Apr 2013 11:10:55 +0200
+ -- Jan-Pascal van Best <janpascal@vanbest.org>  Tue, 02 Apr 2013 12:54:46 +0200
 
 sasc-ng (620-10) local; urgency=low
 

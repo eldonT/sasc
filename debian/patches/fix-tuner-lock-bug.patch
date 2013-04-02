@@ -1,0 +1,26 @@
+diff -r 51c5add369d7 cam.c
+--- a/cam.c     Tue Nov 22 21:11:32 2011 +0100
++++ b/cam.c     Wed Dec 14 22:53:12 2011 +0000
+@@ -2277,13 +2277,18 @@
+ 
+ void cCam::Tune(const cChannel *channel)
+ {
+-  cMutexLock lock(&camMutex);
+-  if(source!=channel->Source() || transponder!=channel->Transponder()) {
++  camMutex.Lock();
++  if(source!=channel->Source() || transponder!=channel->Transponder()) 
++  {
+     source=channel->Source(); transponder=channel->Transponder();
+     PRINTF(L_CORE_PIDS,"%s: now tuned to source %x(%s) transponder %x",devId,source,*cSource::ToString(source),transponder);
++    camMutex.Unlock();
+     Stop();
+-    }
+-  else PRINTF(L_CORE_PIDS,"%s: tune to same source/transponder",devId);
++    return;
++  }
++  else
++    PRINTF(L_CORE_PIDS,"%s: tune to same source/transponder",devId);
++  camMutex.Unlock();
+ }
+ 
+ void cCam::PostTune(void)
