@@ -1,6 +1,12 @@
+sasc-ng (620-11) local; urgency=low
+
+  * Provide debug symbols in -dbg packages
+
+ -- Jan-Pascal van Best <janpascal@vanbest.org>  Tue, 02 Apr 2013 11:10:55 +0200
+
 sasc-ng (620-10) local; urgency=low
 
-  * Hardening
+  * Hardening (not yet complete)
 
  -- Jan-Pascal van Best <janpascal@vanbest.org>  Fri, 29 Mar 2013 09:06:19 +0100
 

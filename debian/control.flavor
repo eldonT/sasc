@@ -13,3 +13,19 @@ Description: softcam to help decode DVB streams
  This package contains the sasc-ng daemon and the dvbloopback
  kernel module for kernel #KERNEL#, optimised for #FLAVOR# cpus.
 
+Package: sasc-ng-#KERNEL#-#FLAVOR#-dbg
+Architecture: any
+Section: debug
+Priority: extra
+Depends:
+    sasc-ng-#KERNEL#-#FLAVOR# (= ${binary:Version}),
+    ${misc:Depends}
+Conflicts: sasc-ng-daemon-dbg
+Replaces: sasc-ng-daemon-dbg
+Provides: sasc-ng-daemon-dbg
+Description: debugging symbols for sasc-ng
+ sasc-ng is a versatile SoftCAM which creates virtual DVB devices 
+ and outputs through them.
+ . 
+ This package contains the debugging symbols for sasc-ng-#KERNEL#-#FLAVOR#.
+
