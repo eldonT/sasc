@@ -2,3 +2,4 @@ always-assume-recent-kernel.patch
 use-proper-kernel-header-locations.patch
 use-ldflags-in-makefiles.patch
 fix-tuner-lock-bug.patch
+#nickfudge-stability-patches-part1.patch

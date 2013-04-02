@@ -1,0 +1,217 @@
+diff -r 442eee2f550d cam.c
+--- a/cam.c   Sun Oct 02 21:09:13 2011 +0200
++++ b/cam.c   Mon Oct 03 07:50:27 2011 +0100
+@@ -65,6 +65,7 @@
+ #define L_HEX_HOOK  LCLASS(L_HEX,32)
+ #define L_HEX_ALL   LALL(L_HEX_HOOK)
+ 
++
+ static const struct LogModule lm_hex = {
+   (LMOD_ENABLE|L_HEX_ALL)&LOPT_MASK,
+   (LMOD_ENABLE)&LOPT_MASK,
+@@ -2277,13 +2278,21 @@
+ 
+ void cCam::Tune(const cChannel *channel)
+ {
+-  cMutexLock lock(&camMutex);
+-  if(source!=channel->Source() || transponder!=channel->Transponder()) {
+-    source=channel->Source(); transponder=channel->Transponder();
+-    PRINTF(L_CORE_PIDS,"%s: now tuned to source %x(%s) transponder %x",devId,source,*cSource::ToString(source),transponder);
++  bool stop = false;
++  {
++    cMutexLock lock(&camMutex);
++    if(source!=channel->Source() || transponder!=channel->Transponder()) {
++      source=channel->Source(); transponder=channel->Transponder();
++      PRINTF(L_CORE_PIDS,"%s: now tuned to source %x(%s) transponder %x",devId,source,*cSource::ToString(source),transponder);
++      stop = true;
++    } else {
++      PRINTF(L_CORE_PIDS,"%s: tune to same source/transponder",devId);
++    }
++  }
++
++  if (stop) {
+     Stop();
+-    }
+-  else PRINTF(L_CORE_PIDS,"%s: tune to same source/transponder",devId);
++  }
+ }
+ 
+ void cCam::PostTune(void)
+@@ -2500,7 +2509,7 @@
+ 
+ void cCam::LogEcmStatus(const cEcmInfo *ecm, bool on)
+ {
+-  cMutexLock lock(&camMutex);
++  //cMutexLock lock(&camMutex);
+   if(on) LogStartup();
+   if(logger) logger->EcmStatus(ecm,on);
+ }
+diff -r 442eee2f550d contrib/Makefile
+--- a/contrib/Makefile   Sun Oct 02 21:09:13 2011 +0200
++++ b/contrib/Makefile   Mon Oct 03 07:50:27 2011 +0100
+@@ -21,7 +21,7 @@
+ 
+ 
+ cccam_ca.so: cccam_ca.c
+-   gcc -O -fbuiltin -fomit-frame-pointer -fPIC -shared -o $@ $< -ldl
++   gcc -O -m32 -fbuiltin -fomit-frame-pointer -fPIC -shared -o $@ $< -ldl
+ 
+ bsdiff:      bsdiff.c
+    gcc -O3 -o $@ $< -lbz2
+diff -r 442eee2f550d contrib/sasc-ng/dvblb_plugins/plugin_cam.c
+--- a/contrib/sasc-ng/dvblb_plugins/plugin_cam.c   Sun Oct 02 21:09:13 2011 +0200
++++ b/contrib/sasc-ng/dvblb_plugins/plugin_cam.c   Mon Oct 03 07:50:27 2011 +0100
+@@ -260,6 +260,7 @@
+ 
+   if (sidmsg->calen == 0) {
+     free_sidmsg(sidmsg);
++    msg->type = MSG_PROCESSED;
+     return;
+   }
+   for(ch=Channels.First(); ch; ch=Channels.Next(ch)) {
+@@ -280,6 +281,7 @@
+         }
+       }
+       free_sidmsg(sidmsg);
++      msg->type = MSG_PROCESSED;
+       return;
+     }
+   } else {
+diff -r 442eee2f550d contrib/sasc-ng/dvblb_plugins/plugin_ffdecsa.c
+--- a/contrib/sasc-ng/dvblb_plugins/plugin_ffdecsa.c   Sun Oct 02 21:09:13 2011 +0200
++++ b/contrib/sasc-ng/dvblb_plugins/plugin_ffdecsa.c   Mon Oct 03 07:50:27 2011 +0100
+@@ -123,11 +123,13 @@
+           pthread_mutex_unlock(&csa->state_lock);
+           return;
+         }
++        pthread_mutex_lock(&csa->keylock);
+         if(! csa->keyindex[index].valid) {
+           csa->keyindex[index].valid = 1;
+           csa->keyindex[index].status = 0;
+           csa->keyindex[index].queued = 0;
+         }
++        pthread_mutex_unlock(&csa->keylock);
+         pop_entry_from_queue_l(pid_ll, &pidmap_empty_queue, struct pid, &list_lock);
+         pid_ll->pid = pid;
+         pid_ll->index = index;
+@@ -146,7 +148,9 @@
+           ll_find_elem(pid_ll, csa->pid_map, index, index, struct pid);
+           if(pid_ll == NULL) {
+             //no valid pids on this index
++            pthread_mutex_lock(&csa->keylock);
+             csa->keyindex[index].status = 0;
++            pthread_mutex_unlock(&csa->keylock);
+             if(list_empty(&csa->pid_map)) {
+               //state = ENCRYPTED_NOT_READY;
+               csa->state = NOT_ENCRYPTED;
+diff -r 442eee2f550d contrib/sasc-ng/dvbloopback/src/msg_passing.c
+--- a/contrib/sasc-ng/dvbloopback/src/msg_passing.c   Sun Oct 02 21:09:13 2011 +0200
++++ b/contrib/sasc-ng/dvbloopback/src/msg_passing.c   Mon Oct 03 07:50:27 2011 +0100
+@@ -46,11 +46,16 @@
+ {
+   struct msgctrl *msgctrl;
+   int priority;
++  int x;
+   for (priority=0; priority <= MSG_HIGH_PRIORITY; priority++) {
+     msgctrl = &message_control[priority];
+     bzero(msgctrl, sizeof(struct msgctrl));
+     INIT_LIST_HEAD(&msgctrl->msglist);
+     INIT_LIST_HEAD(&msgctrl->empty_queue);
++    for (x = 0; x < 10; x++) {
++      struct msg *msg = (struct msg *)malloc(sizeof(struct msg));
++      list_add(&msg->list, &msgctrl->empty_queue);
++    }
+     pthread_mutex_init(&msgctrl->mutex, NULL);
+     pthread_cond_init(&msgctrl->cond, NULL);
+   }
+@@ -95,6 +100,8 @@
+         list_del(&msg->list);
+         break;
+       }
++      if (!msg)
++        break;
+       //If we've seen all elements on the queue, or the queue is empty,
+       //we are done
+       if(ptr == &msgctrl->msglist)
+diff -r 442eee2f550d contrib/sasc-ng/sc/sasccam.cpp
+--- a/contrib/sasc-ng/sc/sasccam.cpp   Sun Oct 02 21:09:13 2011 +0200
++++ b/contrib/sasc-ng/sc/sasccam.cpp   Mon Oct 03 07:50:27 2011 +0100
+@@ -16,7 +16,7 @@
+  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+  * Or, point your browser to http://www.gnu.org/copyleft/gpl.html
+  */
+-
++
+ #define SASC
+ 
+ #include <stdlib.h>
+@@ -41,14 +41,12 @@
+ 
+ bool cScSascDevice::SetCaDescr(ca_descr_t *ca_descr, bool initial)
+ {
+-  printf("Called cScSascDevice::SetCaDescr\n");
+   _SetCaDescr(cardIndex,ca_descr);
+   return true;
+ }
+ 
+ bool cScSascDevice::SetCaPid(ca_pid_t *ca_pid)
+ {
+-  printf("Called cScSascDevice::SetCaPid\n");
+   _SetCaPid(cardIndex,ca_pid);
+   return true;
+ }
+--- a/systems/cardclient/cc.c   Sun Oct 02 21:09:13 2011 +0200
++++ b/systems/cardclient/cc.c   Mon Oct 03 07:50:27 2011 +0100
+@@ -110,7 +110,7 @@
+ 
+ bool cCardClient::SendMsg(const unsigned char *data, int len)
+ {
+-  if(!so.Connected() && !Login()) return false;
++  if(!so.Connected() /*&& !Login()*/) return false;
+   if(so.Write(data,len)<0) {
+     PRINTF(L_CC_CORE,"send error. reconnecting...");
+     Logout();
+@@ -121,7 +121,7 @@
+ 
+ int cCardClient::RecvMsg(unsigned char *data, int len, int to)
+ {
+-  if(!so.Connected() && !Login()) return -1;
++  if(!so.Connected() /*&& !Login()*/) return -1;
+   int n=so.Read(data,len,to);
+   if(n<0) {
+     if(errno==ETIMEDOUT && (len<0 || to==0)) return 0;
+diff -r 442eee2f550d systems/cardclient/newcamd.c
+--- a/systems/cardclient/newcamd.c   Sun Oct 02 21:09:13 2011 +0200
++++ b/systems/cardclient/newcamd.c   Mon Oct 03 07:50:27 2011 +0100
+@@ -472,17 +472,25 @@
+ 
+ bool cCardClientNewCamd::ProcessECM(const cEcmInfo *ecm, const unsigned char *data, unsigned char *cw)
+ {
+-  cMutexLock lock(this);
+-  if((!so.Connected() && !Login()) || !CanHandle(ecm->caId)) return false;
+-  so.Flush();
++  if (!CanHandle(ecm->caId))
++    return false;
++  {
++    cMutexLock lock(this);
++    if (!so.Connected() && !Login())
++      return false;
++    so.Flush();
++  }
+ 
+   struct CustomData cd;
+   InitCustomData(&cd,(unsigned short)ecm->prgId,0);
+-  if(!SendMessage(data,SCT_LEN(data),true,&cd)) return false;
+   unsigned char buffer[CWS_NETMSGSIZE];
+   int n;
+-  while((n=ReceiveMessage(buffer,true))==-2)
+-    PRINTF(L_CC_NEWCAMD,"msg ID sync error. Retrying...");
++  {
++    cMutexLock lock(this);
++    if(!SendMessage(data,SCT_LEN(data),true,&cd)) return false;
++    while((n=ReceiveMessage(buffer,true))==-2)
++      PRINTF(L_CC_NEWCAMD,"msg ID sync error. Retrying...");
++  }
+   switch(n) {
+     case 19: // ecm was decoded
+       // check for zero cw, as newcs doesn't send both cw's every time

@@ -1,0 +1,49 @@
+diff --git a/cam.c b/cam.c
+index 0bdf95b..36b6bfc 100644
+--- a/cam.c
++++ b/cam.c
+@@ -65,6 +65,7 @@
+ #define L_HEX_HOOK  LCLASS(L_HEX,32)
+ #define L_HEX_ALL   LALL(L_HEX_HOOK)
+ 
++
+ static const struct LogModule lm_hex = {
+   (LMOD_ENABLE|L_HEX_ALL)&LOPT_MASK,
+   (LMOD_ENABLE)&LOPT_MASK,
+@@ -2354,13 +2355,21 @@ bool cCam::IsSoftCSA(bool live)
+ 
+ void cCam::Tune(const cChannel *channel)
+ {
+-  cMutexLock lock(&camMutex);
+-  if(source!=channel->Source() || transponder!=channel->Transponder()) {
+-    source=channel->Source(); transponder=channel->Transponder();
+-    PRINTF(L_CORE_PIDS,"%s: now tuned to source %x(%s) transponder %x",devId,source,*cSource::ToString(source),transponder);
+-    Stop();
++  bool stop = false;
++  {
++    cMutexLock lock(&camMutex);
++    if(source!=channel->Source() || transponder!=channel->Transponder()) {
++      source=channel->Source(); transponder=channel->Transponder();
++      PRINTF(L_CORE_PIDS,"%s: now tuned to source %x(%s) transponder %x",devId,source,*cSource::ToString(source),transponder);
++      stop = true;
++    } else {
++      PRINTF(L_CORE_PIDS,"%s: tune to same source/transponder",devId);
+     }
+-  else PRINTF(L_CORE_PIDS,"%s: tune to same source/transponder",devId);
++  }
++
++  if (stop) {
++    Stop();
++  }
+ }
+ 
+ void cCam::PostTune(void)
+@@ -2577,7 +2586,7 @@ void cCam::LogStartup(void)
+ 
+ void cCam::LogEcmStatus(const cEcmInfo *ecm, bool on)
+ {
+-  cMutexLock lock(&camMutex);
++  //cMutexLock lock(&camMutex);
+   if(on) LogStartup();
+   if(logger) logger->EcmStatus(ecm,on);
+ }
