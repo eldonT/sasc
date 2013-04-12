@@ -4,8 +4,10 @@ sasc-ng (620-11) local; urgency=low
   * Add patch to fix tuner lock bug from 
     http://dolot.kipdola.com/wiki/Install_SASC-NG#Configuring_and_compiling
   * Added nickfudge's stability patches (partially?)
+  * Prevent init script from checking -sasc in the kernel version name, using
+    a patched kernel is not necessary any more
 
- -- Jan-Pascal van Best <janpascal@vanbest.org>  Tue, 02 Apr 2013 12:54:46 +0200
+ -- Jan-Pascal van Best <janpascal@vanbest.org>  Fri, 12 Apr 2013 12:54:15 +0200
 
 sasc-ng (620-10) local; urgency=low
 
