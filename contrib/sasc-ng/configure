@@ -145,18 +145,11 @@ done
     OS=$( lsb_release -si )
     RELEASE=$( lsb_release -sc )
 
-# Abort if running kernel is < 2.6.38
+# Abort if running kernel is < 3.x
 
-if [ $FIRST_DIGIT -eq 2 ]; then
-  if [ $SECOND_DIGIT -lt 6 ]; then
-    echo "The kernel you are running is not supported anymore.\n\nMinimum supported version is 2.6.38\n\nAborting..."
+if [ $FIRST_DIGIT -lt 3 ]; then
+  echo "The kernel you are running is not supported anymore.\n\nMinimum supported version is 3.x\n\nAborting..."
     exit 1
-  elif [ $SECOND_DIGIT -eq 6 ]; then
-    if [ $PATCHLEVEL -lt 38 ]; then
-      echo "The kernel you are running is not supported anymore.\n\nMinimum supported version is 2.6.38\n\nAborting..."
-      exit 1
-    fi
-  fi
 fi
 
 # Are we running Debian?
@@ -184,7 +177,7 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
   if ! dpkg-query -l linux-headers-`uname -r` > /dev/null 2>&1; then
      echo "\nMissing linux-headers-`uname -r`, marking for installation.\n\n
      IMPORTANT: If you compiled a custom kernel, answer no\n"
-     confirm "Would you really like me to install linux-headers-`uname -r`? [y/N]"
+     confirm "Would you like me to install linux-headers-`uname -r`? [y/N]"
     # if answer = no
     if [ $(echo $?) -eq 1 ]; then
       echo "\n   Not installing linux-headers-`uname -r`\n" 
@@ -212,8 +205,6 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
       else
         if [ $FIRST_DIGIT -eq 3 ]; then
           wget -P /usr/src https://www.kernel.org/pub/linux/kernel/v3.x/linux-$SHORT_KERNEL.tar.bz2
-        elif [ $FIRST_DIGIT -eq 2 ]; then
-          wget -P /usr/src https://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.39.tar.bz2
         fi
       fi
         echo "\nBuilding patched dvb-core module for kernel `uname -r`\n\nPreparing, this may take a while...\n"
@@ -243,17 +234,6 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
            rm -rf $TEMPDIR
            depmod -a
          fi
-      elif [ $FIRST_DIGIT -eq 2 ]; then
-         tar -xjf /usr/src/linux-2.6.39.tar.bz2 -C $TEMPDIR --strip-components 5 linux-source-$SHORT_KERNEL/drivers/media/dvb/dvb-core/
-         echo "\nBuilding and installing, please be patient...\n"
-         patch -p5 -d $TEMPDIR < linux-2.6.38-dvb-mutex.patch > /dev/null 2>&1
-         make -C $BUILD_DIR M=$TEMPDIR modules
-         rm -f /lib/modules/`uname -r`/updates/dvb-core.ko > /dev/null 2>&1
-         mkdir -p /lib/modules/`uname -r`/updates > /dev/null 2>&1
-         /usr/bin/install $TEMPDIR/dvb-core.ko /lib/modules/`uname -r`/updates/
-         cp -f $TEMPDIR/dvbdev.h dvbloopback/module/dvbdev-orig.h
-         rm -rf $TEMPDIR
-         depmod -a
       fi
     fi
   else
@@ -262,40 +242,30 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
     rm -rf $TEMPDIR
     mkdir -p $TEMPDIR
       if  [ $FIRST_DIGIT -eq 3 ]; then
-         if [ $SECOND_DIGIT -lt 7 ]; then
-           tar -xjf $KERNEL_TARBALL -C $TEMPDIR --strip-components 5 linux-source-$SHORT_KERNEL/drivers/media/dvb/dvb-core/
-           echo "\nBuilding and installing, please be patient...\n"
-           patch -p5 -d $TEMPDIR < linux-2.6.38-dvb-mutex.patch > /dev/null 2>&1
-           make -C $BUILD_DIR M=$TEMPDIR modules
-           rm -f /lib/modules/`uname -r`/updates/dvb-core.ko > /dev/null 2>&1
-           mkdir -p /lib/modules/`uname -r`/updates > /dev/null 2>&1
-           /usr/bin/install $TEMPDIR/dvb-core.ko /lib/modules/`uname -r`/updates/
-           cp -f $TEMPDIR/dvbdev.h dvbloopback/module/dvbdev-orig.h
-           rm -rf $TEMPDIR
-           depmod -a
-         else 
-           tar -xjf $KERNEL_TARBALL -C $TEMPDIR --strip-components 4 linux-source-$SHORT_KERNEL/drivers/media/dvb-core/
-           echo "\nBuilding and installing, please be patient...\n"
-           patch -p4 -d $TEMPDIR < linux-3.7.1-dvb-mutex.patch > /dev/null 2>&1
-           make -C $BUILD_DIR M=$TEMPDIR/dvb-core modules
-           rm -f /lib/modules/`uname -r`/updates/dvb-core.ko > /dev/null 2>&1
-           mkdir -p /lib/modules/`uname -r`/updates > /dev/null 2>&1
-           /usr/bin/install $TEMPDIR/dvb-core/dvb-core.ko /lib/modules/`uname -r`/updates/
-           cp -f $TEMPDIR/dvb-core/dvbdev.h dvbloopback/module/dvbdev-orig.h
-           rm -rf $TEMPDIR
-           depmod -a
-         fi
-      elif [ $FIRST_DIGIT -eq 2 ]; then
-         tar -xjf $KERNEL_TARBALL -C $TEMPDIR --strip-components 5 linux-source-$SHORT_KERNEL/drivers/media/dvb/dvb-core/
-         echo "\nBuilding and installing, please be patient...\n"
-         patch -p5 -d $TEMPDIR < linux-2.6.38-dvb-mutex.patch > /dev/null 2>&1
-         make -C $BUILD_DIR M=$TEMPDIR modules
-         rm -f /lib/modules/`uname -r`/updates/dvb-core.ko > /dev/null 2>&1
-         mkdir -p /lib/modules/`uname -r`/updates > /dev/null 2>&1
-         /usr/bin/install $TEMPDIR/dvb-core.ko /lib/modules/`uname -r`/updates/
-         cp -f $TEMPDIR/dvbdev.h dvbloopback/module/dvbdev-orig.h
-         rm -rf $TEMPDIR
-         depmod -a
+        if [ $SECOND_DIGIT -lt 7 ]; then
+          tar -xjf $KERNEL_TARBALL -C $TEMPDIR --strip-components 5 linux-source-$SHORT_KERNEL/drivers/media/dvb/dvb-core/
+          echo "\nBuilding and installing, please be patient...\n"
+          patch -p5 -d $TEMPDIR < linux-2.6.38-dvb-mutex.patch > /dev/null 2>&1
+          make -C $BUILD_DIR M=$TEMPDIR modules
+          rm -f /lib/modules/`uname -r`/updates/dvb-core.ko > /dev/null 2>&1
+          mkdir -p /lib/modules/`uname -r`/updates > /dev/null 2>&1
+          /usr/bin/install $TEMPDIR/dvb-core.ko /lib/modules/`uname -r`/updates/
+          cp -f $TEMPDIR/dvbdev.h dvbloopback/module/dvbdev-orig.h
+          rm -rf $TEMPDIR
+          depmod -a
+        else 
+          tar -xjf $KERNEL_TARBALL -C $TEMPDIR --strip-components 4 linux-source-$SHORT_KERNEL/drivers/media/dvb-core/
+          echo "\nBuilding and installing, please be patient...\n"
+          patch -p4 -d $TEMPDIR < linux-3.7.1-dvb-mutex.patch > /dev/null 2>&1
+          make -C $BUILD_DIR M=$TEMPDIR/dvb-core modules
+          rm -f /lib/modules/`uname -r`/updates/dvb-core.ko > /dev/null 2>&1
+          mkdir -p /lib/modules/`uname -r`/updates > /dev/null 2>&1
+          /usr/bin/install $TEMPDIR/dvb-core/dvb-core.ko /lib/modules/`uname -r`/updates/
+          cp -f $TEMPDIR/dvb-core/dvbdev.h dvbloopback/module/dvbdev-orig.h
+          rm -rf $TEMPDIR
+          depmod -a
+        fi
+     fi
    fi
 fi
 
@@ -432,11 +402,6 @@ if test "x$dvb_path" = "x"; then
     else
       echo "`uname -r` kernel detected."
       cp -f dvbloopback/module/config_dvb_new.pl dvbloopback/module/config_dvb.pl
-    fi
-  else
-    if [ $FIRST_DIGIT -eq 2 ]; then
-      echo "`uname -r` kernel detected."
-      cp -f dvbloopback/module/config_dvb_old.pl dvbloopback/module/config_dvb.pl
     fi
   fi
 fi
