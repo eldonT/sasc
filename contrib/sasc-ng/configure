@@ -195,6 +195,10 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
     BUILD_DIR=/lib/modules/`uname -r`/build
     TEMPDIR=/usr/src/sasctmp/$SHORT_KERNEL
 
+  if test -e /dev/dvb/adapter4 > /dev/null 2>&1; then
+    echo "\n\nWARNING!!!\n\nYou have more then 4 DVB adapters.\nYour kernel cannot be patched.\n\nIf you did not do so allready,\nrecompile your kernel.\n\nAnswer 'no' to next questions,\nor just hit 'enter' twice.\n"
+    sleep 10
+
   echo "\nSasc needs a patched dvb-core.ko kernel module.\n\nIf you are running a default Debian kernel, or if you compiled a kernel from www.kernel.org, I can do that for you.\nIn order to do this right, you need a line like:\n\n deb-src http://ftp.debian.org/debian/ wheezy main contrib non-free\n\nin your /etc/apt/sources.list and do apt-get update afterwards.\n\n(or if you are running a kernel from eg 'sid' replace \n'wheezy' with 'sid' in that line)\n\nOr if you compiled a kernel from www.kernel.org, just answer no.\nWe'll address this situation in a next question.\n\n"
   confirm "Is your sources.list OK and do you want me to install linux-source-$SHORT_KERNEL? This will remove any previously installed linux-source packages and (re)install the source for your current kernel. Having done that, your running kernel will be patched for use with sasc.[y/N]"
 
@@ -266,6 +270,7 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
     else
       echo "\n   Not patching any kernel\n"
     fi
+  fi
   fi
 fi
 
