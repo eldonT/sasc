@@ -247,6 +247,7 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
         /usr/bin/install $TEMPDIR/dvb-core.ko /lib/modules/`uname -r`/updates/
         cp -f $TEMPDIR/dvbdev.h dvbloopback/module/dvbdev-orig.h
         rm -rf $TEMPDIR
+        rm $KERNEL_TARBALL
         depmod -a
       else 
         tar -xjf $KERNEL_TARBALL -C $TEMPDIR --strip-components 4 linux-source-$SHORT_KERNEL/drivers/media/dvb-core/
@@ -258,6 +259,7 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
         /usr/bin/install $TEMPDIR/dvb-core/dvb-core.ko /lib/modules/`uname -r`/updates/
         cp -f $TEMPDIR/dvb-core/dvbdev.h dvbloopback/module/dvbdev-orig.h
         rm -rf $TEMPDIR
+        rm $KERNEL_TARBALL
         depmod -a
       fi
     else
