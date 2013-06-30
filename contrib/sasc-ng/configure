@@ -219,11 +219,11 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
         tar -xjf $KERNEL_TARBALL -C $TEMPDIR --strip-components 4 linux-source-$SHORT_KERNEL/drivers/media/dvb-core/
         echo "\nBuilding and installing, please be patient...\n"
         patch -p4 -d $TEMPDIR < linux-3.7.1-dvb-mutex.patch > /dev/null 2>&1
-        make -C $BUILD_DIR M=$TEMPDIR/dvb-core modules
+        make -C $BUILD_DIR M=$TEMPDIR modules
         rm -f /lib/modules/`uname -r`/updates/dvb-core.ko > /dev/null 2>&1
         mkdir -p /lib/modules/`uname -r`/updates > /dev/null 2>&1
-        /usr/bin/install $TEMPDIR/dvb-core/dvb-core.ko /lib/modules/`uname -r`/updates/
-        cp -f $TEMPDIR/dvb-core/dvbdev.h dvbloopback/module/dvbdev-orig.h
+        /usr/bin/install $TEMPDIR/dvb-core.ko /lib/modules/`uname -r`/updates/
+        cp -f $TEMPDIR/dvbdev.h dvbloopback/module/dvbdev-orig.h
         rm -rf $TEMPDIR
         depmod -a
       fi
@@ -254,11 +254,11 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
         tar -xjf $KERNELORG_TARBALL -C $TEMPDIR --strip-components 4 linux-$SHORT_KERNEL/drivers/media/dvb-core/
         echo "\nBuilding and installing, please be patient...\n"
         patch -p4 -d $TEMPDIR < linux-3.7.1-dvb-mutex.patch > /dev/null 2>&1
-        make -C $BUILD_DIR M=$TEMPDIR/dvb-core modules
+        make -C $BUILD_DIR M=$TEMPDIR modules
         rm -f /lib/modules/`uname -r`/updates/dvb-core.ko > /dev/null 2>&1
         mkdir -p /lib/modules/`uname -r`/updates > /dev/null 2>&1
-        /usr/bin/install $TEMPDIR/dvb-core/dvb-core.ko /lib/modules/`uname -r`/updates/
-        cp -f $TEMPDIR/dvb-core/dvbdev.h dvbloopback/module/dvbdev-orig.h
+        /usr/bin/install $TEMPDIR/dvb-core.ko /lib/modules/`uname -r`/updates/
+        cp -f $TEMPDIR/dvbdev.h dvbloopback/module/dvbdev-orig.h
         rm -rf $TEMPDIR
         rm -f $KERNELORG_TARBALL
         depmod -a
