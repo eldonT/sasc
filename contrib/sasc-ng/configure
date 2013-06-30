@@ -191,6 +191,7 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
   # Let's do it.
 
     KERNEL_TARBALL="/usr/src/linux-source-$SHORT_KERNEL.tar.bz2"
+    KERNELORG_TARBALL="/usr/src/linux-$SHORT_KERNEL.tar.bz2"
     BUILD_DIR=/lib/modules/`uname -r`/build
     TEMPDIR=/usr/src/sasctmp/$SHORT_KERNEL
 
@@ -238,7 +239,7 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
       rm -rf $TEMPDIR
       mkdir -p $TEMPDIR
       if [ $SECOND_DIGIT -lt 7 ]; then
-        tar -xjf $KERNEL_TARBALL -C $TEMPDIR --strip-components 5 linux-source-$SHORT_KERNEL/drivers/media/dvb/dvb-core/
+        tar -xjf $KERNELORG_TARBALL -C $TEMPDIR --strip-components 5 linux-source-$SHORT_KERNEL/drivers/media/dvb/dvb-core/
         echo "\nBuilding and installing, please be patient...\n"
         patch -p5 -d $TEMPDIR < linux-2.6.38-dvb-mutex.patch > /dev/null 2>&1
         make -C $BUILD_DIR M=$TEMPDIR modules
@@ -247,10 +248,10 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
         /usr/bin/install $TEMPDIR/dvb-core.ko /lib/modules/`uname -r`/updates/
         cp -f $TEMPDIR/dvbdev.h dvbloopback/module/dvbdev-orig.h
         rm -rf $TEMPDIR
-        rm $KERNEL_TARBALL
+        rm -f $KERNELORG_TARBALL
         depmod -a
       else 
-        tar -xjf $KERNEL_TARBALL -C $TEMPDIR --strip-components 4 linux-source-$SHORT_KERNEL/drivers/media/dvb-core/
+        tar -xjf $KERNELORG_TARBALL -C $TEMPDIR --strip-components 4 linux-source-$SHORT_KERNEL/drivers/media/dvb-core/
         echo "\nBuilding and installing, please be patient...\n"
         patch -p4 -d $TEMPDIR < linux-3.7.1-dvb-mutex.patch > /dev/null 2>&1
         make -C $BUILD_DIR M=$TEMPDIR/dvb-core modules
@@ -259,7 +260,7 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
         /usr/bin/install $TEMPDIR/dvb-core/dvb-core.ko /lib/modules/`uname -r`/updates/
         cp -f $TEMPDIR/dvb-core/dvbdev.h dvbloopback/module/dvbdev-orig.h
         rm -rf $TEMPDIR
-        rm $KERNEL_TARBALL
+        rm -f $KERNELORG_TARBALL
         depmod -a
       fi
     else
