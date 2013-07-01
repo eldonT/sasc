@@ -188,7 +188,7 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
       echo "\n   Not installing linux-headers-`uname -r`\n" 
     # if answer = yes
     else
-       apt-get install linux-headers-`uname -r` -y
+       apt-get install linux-headers-`uname -r` -y  || die "Error installing linux-headers-`uname -r`"
     fi
   fi
 
