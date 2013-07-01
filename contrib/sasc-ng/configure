@@ -174,6 +174,11 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
      apt-get install libssl-dev -y || die "Error installing libssl-dev"
   fi
 
+  if ! dpkg-query -l build-essential > /dev/null 2>&1; then
+     echo "Missing build-essential, marking for installation."
+     apt-get install build-essential -y || die "Error installing build-essential"
+  fi
+
   if ! dpkg-query -l linux-headers-`uname -r` > /dev/null 2>&1; then
      echo "\nMissing linux-headers-`uname -r`, marking for installation.\n\n
      IMPORTANT: If you compiled a custom kernel, answer no\n"
@@ -198,11 +203,11 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
   echo "\n\n   WARNING!!!\n\n   If you have more then 4 DVB adapters, or planning to use more then 4,\n   your kernel cannot be patched.\n\n   If you did not do so allready,\n   recompile your kernel with apropiate dvb-mutex patch,\n   and 'CONFIG_DVB_MAX_ADAPTERS=<twice your adapters>'\n\n   Answer 'no' to the next questions,\n   or just hit 'enter' twice.\n"
   sleep 8
 
-  echo "\nSasc needs a patched dvb-core.ko kernel module.\n\nIf you are running a default Debian kernel, or if you compiled a kernel from www.kernel.org, I can do that for you.\nIn order to do this right, you need a line like:\n\n deb-src http://ftp.debian.org/debian/ wheezy main contrib non-free\n\nin your /etc/apt/sources.list and do apt-get update afterwards.\n\n(or if you are running a kernel from eg 'sid' replace \n'wheezy' with 'sid' in that line)\n\nOr if you compiled a kernel from www.kernel.org, just answer no.\nWe'll address this situation in a next question.\n\n"
-  confirm "Is your sources.list OK and do you want me to install linux-source-$SHORT_KERNEL? This will remove any previously installed linux-source packages and (re)install the source for your current kernel. Having done that, your running kernel will be patched for use with sasc.[y/N]"
+  echo "\nSasc needs a patched dvb-core.ko kernel module.\n\nIf you are running a default Debian kernel, or if you compiled a kernel from www.kernel.org, I can do that for you.\n\nIf you compiled a kernel from www.kernel.org, just answer no.\nWe'll address that situation in a next question.\n\n"
+  confirm "Do you want me to install linux-source-$SHORT_KERNEL? This will remove any previously installed linux-source packages and (re)install the source for your current kernel. Having done that, build deps will be installed and your running kernel will be patched for use with sasc.[y/N]"
 
   if [ $(echo $?) -eq 0 ]; then
-    apt-get purge linux-source* -y && apt-get install linux-source-$SHORT_KERNEL -y
+    apt-get purge linux-source* -y && apt-get install linux-source-$SHORT_KERNEL -y && apt-get build-dep linux --no-install-recommends -y
     echo "\nBuilding patched dvb-core module for kernel `uname -r`\n\nPreparing, this may take a while...\n"
     rm -rf $TEMPDIR
     mkdir -p $TEMPDIR
@@ -232,10 +237,11 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
       fi
     fi
   else
-    echo "\n   Not installing linux-source-$SHORT_KERNEL\n"  
+    echo "\n   Not installing linux-source-$SHORT_KERNEL\n\n   Answering 'y' to the next question will also install any missing build deps"  
     confirm "Do you want me to patch a kernel that you compiled from official www.kernel.org sources?[y/N]"
     if [ $(echo $?) -eq 0 ]; then
       if [ $FIRST_DIGIT -eq 3 ]; then
+        apt-get build-dep linux --no-install-recommends -y
         wget -P /usr/src https://www.kernel.org/pub/linux/kernel/v3.x/linux-$SHORT_KERNEL.tar.bz2
       fi
       echo "\nBuilding patched dvb-core module for kernel `uname -r`\n\nPreparing, this may take a while...\n"
