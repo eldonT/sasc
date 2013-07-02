@@ -76,7 +76,7 @@ get_cpu_optimization(){
      fi
    done
    FLAGS="$FLAGS -march=$ARCH"
-   echo "Processor capabilities: $ARCH ($OPTS )"
+   echo "\nProcessor capabilities: $ARCH ($OPTS )"
 }
 
 show_help(){
@@ -180,108 +180,28 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
   fi
 
   if ! dpkg-query -l linux-headers-`uname -r` > /dev/null 2>&1; then
-     echo "\nMissing linux-headers-`uname -r`, marking for installation.\n\n
-     IMPORTANT: If you compiled a custom kernel, answer no\n"
-     confirm "Would you really like me to install linux-headers-`uname -r`? [y/N]"
-    # if answer = no
-    if [ $(echo $?) -eq 1 ]; then
-      echo "\n   Not installing linux-headers-`uname -r`\n" 
-    # if answer = yes
-    else
+   echo "\nMissing linux-headers-`uname -r`, marking for installation.\n\n"
        apt-get install linux-headers-`uname -r` -y  || die "Error installing linux-headers-`uname -r`"
-    fi
   fi
 
+
   # When using sasc, the kernel has to be patched.
-  # Let's do it.
 
-    KERNEL_TARBALL="/usr/src/linux-source-$SHORT_KERNEL.tar.bz2"
-    KERNELORG_TARBALL="/usr/src/linux-$SHORT_KERNEL.tar.bz2"
-    BUILD_DIR=/lib/modules/`uname -r`/build
-    TEMPDIR=/usr/src/sasctmp/$SHORT_KERNEL
+  echo "\nSasc needs a patched dvb-core.ko kernel module.\n\nIf you are running a default Debian kernel, I can do that for you.\n\nIf you want me to patch your kernel, answer 'y' to next question.\n\n"
 
-  echo "\n\n   WARNING!!!\n\n   If you have more then 4 DVB adapters, or planning to use more then 4,\n   your kernel cannot be patched.\n\n   If you did not do so allready,\n   recompile your kernel with apropiate dvb-mutex patch,\n   and 'CONFIG_DVB_MAX_ADAPTERS=<twice your adapters>'\n\n   Answer 'no' to the next questions,\n   or just hit 'enter' twice.\n"
-  sleep 8
-
-  echo "\nSasc needs a patched dvb-core.ko kernel module.\n\nIf you are running a default Debian kernel, or if you compiled a kernel from www.kernel.org, I can do that for you.\n\nIf you compiled a kernel from www.kernel.org, just answer no.\nWe'll address that situation in a next question.\n\n"
-  confirm "Do you want me to install linux-source-$SHORT_KERNEL? This will remove any previously installed linux-source packages and (re)install the source for your current kernel. Having done that, build deps will be installed and your running kernel will be patched for use with sasc.[y/N]"
+ confirm "Do you want to run 'kernelpatch' first? [y/N]"
 
   if [ $(echo $?) -eq 0 ]; then
-    apt-get purge linux-source* -y && apt-get install linux-source-$SHORT_KERNEL -y && apt-get build-dep linux --no-install-recommends -y
-    echo "\nBuilding patched dvb-core module for kernel `uname -r`\n\nPreparing, this may take a while...\n"
-    rm -rf $TEMPDIR
-    mkdir -p $TEMPDIR
-    if  [ $FIRST_DIGIT -eq 3 ]; then
-      if [ $SECOND_DIGIT -lt 7 ]; then
-        tar -xjf $KERNEL_TARBALL -C $TEMPDIR --strip-components 5 linux-source-$SHORT_KERNEL/drivers/media/dvb/dvb-core/
-        echo "\nBuilding and installing, please be patient...\n"
-        patch -p5 -d $TEMPDIR < linux-2.6.38-dvb-mutex.patch > /dev/null 2>&1
-        make -C $BUILD_DIR M=$TEMPDIR modules
-        rm -f /lib/modules/`uname -r`/updates/dvb-core.ko > /dev/null 2>&1
-        mkdir -p /lib/modules/`uname -r`/updates > /dev/null 2>&1
-        /usr/bin/install $TEMPDIR/dvb-core.ko /lib/modules/`uname -r`/updates/
-        cp -f $TEMPDIR/dvbdev.h dvbloopback/module/dvbdev-orig.h
-        rm -rf $TEMPDIR
-        depmod -a
-      else 
-        tar -xjf $KERNEL_TARBALL -C $TEMPDIR --strip-components 4 linux-source-$SHORT_KERNEL/drivers/media/dvb-core/
-        echo "\nBuilding and installing, please be patient...\n"
-        patch -p4 -d $TEMPDIR < linux-3.7.1-dvb-mutex.patch > /dev/null 2>&1
-        make -C $BUILD_DIR M=$TEMPDIR modules
-        rm -f /lib/modules/`uname -r`/updates/dvb-core.ko > /dev/null 2>&1
-        mkdir -p /lib/modules/`uname -r`/updates > /dev/null 2>&1
-        /usr/bin/install $TEMPDIR/dvb-core.ko /lib/modules/`uname -r`/updates/
-        cp -f $TEMPDIR/dvbdev.h dvbloopback/module/dvbdev-orig.h
-        rm -rf $TEMPDIR
-        depmod -a
-      fi
-    fi
-  else
-    echo "\n   Not installing linux-source-$SHORT_KERNEL\n\n   Answering 'y' to the next question will also install any missing build deps"  
-    confirm "Do you want me to patch a kernel that you compiled from official www.kernel.org sources?[y/N]"
-    if [ $(echo $?) -eq 0 ]; then
-      if [ $FIRST_DIGIT -eq 3 ]; then
-        apt-get build-dep linux --no-install-recommends -y
-        wget -P /usr/src https://www.kernel.org/pub/linux/kernel/v3.x/linux-$SHORT_KERNEL.tar.bz2
-      fi
-      echo "\nBuilding patched dvb-core module for kernel `uname -r`\n\nPreparing, this may take a while...\n"
-      rm -rf $TEMPDIR
-      mkdir -p $TEMPDIR
-      if [ $SECOND_DIGIT -lt 7 ]; then
-        tar -xjf $KERNELORG_TARBALL -C $TEMPDIR --strip-components 5 linux-$SHORT_KERNEL/drivers/media/dvb/dvb-core/
-        echo "\nBuilding and installing, please be patient...\n"
-        patch -p5 -d $TEMPDIR < linux-2.6.38-dvb-mutex.patch > /dev/null 2>&1
-        make -C $BUILD_DIR M=$TEMPDIR modules
-        rm -f /lib/modules/`uname -r`/updates/dvb-core.ko > /dev/null 2>&1
-        mkdir -p /lib/modules/`uname -r`/updates > /dev/null 2>&1
-        /usr/bin/install $TEMPDIR/dvb-core.ko /lib/modules/`uname -r`/updates/
-        cp -f $TEMPDIR/dvbdev.h dvbloopback/module/dvbdev-orig.h
-        rm -rf $TEMPDIR
-        rm -f $KERNELORG_TARBALL
-        depmod -a
-      else 
-        tar -xjf $KERNELORG_TARBALL -C $TEMPDIR --strip-components 4 linux-$SHORT_KERNEL/drivers/media/dvb-core/
-        echo "\nBuilding and installing, please be patient...\n"
-        patch -p4 -d $TEMPDIR < linux-3.7.1-dvb-mutex.patch > /dev/null 2>&1
-        make -C $BUILD_DIR M=$TEMPDIR modules
-        rm -f /lib/modules/`uname -r`/updates/dvb-core.ko > /dev/null 2>&1
-        mkdir -p /lib/modules/`uname -r`/updates > /dev/null 2>&1
-        /usr/bin/install $TEMPDIR/dvb-core.ko /lib/modules/`uname -r`/updates/
-        cp -f $TEMPDIR/dvbdev.h dvbloopback/module/dvbdev-orig.h
-        rm -rf $TEMPDIR
-        rm -f $KERNELORG_TARBALL
-        depmod -a
-      fi
-    else
-      echo "\n   Not patching any kernel\n"
-    fi
+    echo "\nStarting patch routine...\n"
+    sleep 1
+    ./kernelpatch 
   fi
 fi
 
 if test "x$CXX" = "x"; then
   CXX=g++
 fi
-echo "Using C++ compiler: $CXX"
+echo "\n\nUsing C++ compiler: $CXX"
 
 if test "x$ffdecsa_opt" = "xlong"; then
   FFDECSA_MODES="PARALLEL_32_INT PARALLEL_32_4CHAR PARALLEL_32_4CHARA \
@@ -294,7 +214,7 @@ elif test "x$ffdecsa_opt" = "xyes"; then
                  PARALLEL_64_MMX PARALLEL_128_2LONG PARALLEL_128_2MMX \
                  PARALLEL_128_SSE PARALLEL_128_SSE2"
 elif test "x$ffdecsa_opt" != "xno"; then
-  echo "Bad option to --optimize '$ffdecsa_opt'.  Should be 'yes, no, long'"
+  echo "\nBad option to --optimize '$ffdecsa_opt'.  Should be 'yes, no, long'"
   exit 1
 fi
 if test "x${TMPDIR}" = "x"; then
@@ -304,12 +224,12 @@ fi
 echo "# Automatically generated by configure - do not modify" > config.mak
 
 if test "x$compiletype_opt" = "xrelease"; then
-  echo "Using compile type release"
+  echo "\nUsing compile type release"
   echo "RELEASE=1" >> config.mak
 elif test "x$compiletype_opt" = "xdebug"; then
-  echo "Using compile type debug"
+  echo "\nUsing compile type debug"
 else
-  echo "Bad option to --compiletype '$compiletype_opt'. Should be 'release, debug'"
+  echo "\nBad option to --compiletype '$compiletype_opt'. Should be 'release, debug'"
   exit 1
 fi
 
@@ -321,7 +241,7 @@ if test "x$auxserver_opt" != "x"; then
 fi
 
 if test "x$shared_opt" = "x1"; then
-  echo "Compiling sc for shared libraries"
+  echo "\nCompiling sc for shared libraries"
   echo "USE_DLOAD=1" >> config.mak
 fi
 
@@ -342,7 +262,7 @@ if test "x$ffdecsa_opt" != "xno"; then
    TMPOUT="${TMPDIR}/FFdecsa/out"
    mkdir "${TMPDIR}/FFdecsa"
    cp $FFdecsaDIR/*.c $FFdecsaDIR/*.h $FFdecsaDIR/Makefile "${TMPDIR}/FFdecsa/"
-   echo "Trying various FFdecsa optimizations..."
+   echo "\nTrying various FFdecsa optimizations..."
    for var in ${FFDECSA_MODES}; do
      make -C "${TMPDIR}/FFdecsa" FFdecsa_test "PARALLEL_MODE=${var}" "${FLAGS}" "COMPILER=$CXX" >/dev/null 2>&1
      if test $? -ne 0 ; then
@@ -368,7 +288,7 @@ if test "x$ffdecsa_opt" != "xno"; then
      fi
      make -C "${TMPDIR}/FFdecsa" clean >/dev/null 2>&1
    done
-   echo "Choosing PARALLEL_MODE = ${MAX_MODE}"
+   echo "\nChoosing PARALLEL_MODE = ${MAX_MODE}"
    echo "FFDECSA_OPTS = \"$FLAGS\" PARALLEL_MODE=${MAX_MODE} COMPILER=$CXX" >> config.mak
 else
    if ! test -f /proc/cpuinfo; then
@@ -378,7 +298,7 @@ else
    fi
    get_cpu_optimization
    if test "x$MAX_MODE" != "xPARALLEL_32_INT"; then
-     echo "Using PARALLEL_MODE = ${MAX_MODE}"
+     echo "\nUsing PARALLEL_MODE = ${MAX_MODE}"
      echo "FFDECSA_OPTS = \"$FLAGS\" PARALLEL_MODE=${MAX_MODE} COMPILER=$CXX" >> config.mak
    else
      echo "Using PARALLEL_MODE = ${MAX_MODE}"
@@ -390,15 +310,15 @@ if test "x$dvb_path" != "x"; then
   cp -f dvbloopback/module/config_dvb_dvbdir.pl dvbloopback/module/config_dvb.pl
   if test -e "${dvb_path}/include/linux/dvb/frontend.h"; then
     echo "DVB_DIR=${dvb_path}" >> config.mak
-    echo "Using DVB_DIR: ${dvb_path}"
+    echo "\nUsing DVB_DIR: ${dvb_path}"
   elif test -e "${dvb_path}/linux/include/linux/dvb/frontend.h"; then
     echo "DVB_DIR=${dvb_path}/linux" >> config.mak
-    echo "Using DVB_DIR: ${dvb_path}/linux"
+    echo "\nUsing DVB_DIR: ${dvb_path}/linux"
   elif test -e "${dvb_path}/include/uapi/linux/dvb/frontend.h"; then
     echo "DVB_DIR=${dvb_path}" >> config.mak
-    echo "Using DVB_DIR: ${dvb_path}"
+    echo "\nUsing DVB_DIR: ${dvb_path}"
   else
-    echo "Could not find DVB headers within $dvb_path"
+    echo "\nCould not find DVB headers within $dvb_path"
   fi
 fi
 
@@ -406,10 +326,10 @@ if test "x$dvb_path" = "x"; then
 # Distinguish between '3.6 or lower' and '3.7 or higher' kernels
   if [ $FIRST_DIGIT -eq 3 ]; then
     if [ $SECOND_DIGIT -lt 7 ]; then
-      echo "`uname -r` kernel detected."
+      echo "\n`uname -r` kernel detected."
       cp -f dvbloopback/module/config_dvb_old.pl dvbloopback/module/config_dvb.pl
     else
-      echo "`uname -r` kernel detected."
+      echo "\n`uname -r` kernel detected."
       cp -f dvbloopback/module/config_dvb_new.pl dvbloopback/module/config_dvb.pl
     fi
   fi
@@ -419,4 +339,5 @@ rm -rf "${TMPDIR}"
 echo "CXX=$CXX" >> config.mak
 date >> config.log
 echo "	$0 $*" >> config.log
+echo "\n\n\nTime to run 'make' and 'make module'\n"
 
