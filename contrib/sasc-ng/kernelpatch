@@ -7,13 +7,16 @@ die(){
 
 confirm(){
     # call with a prompt string or use a default
-    read -r -p "${1:-Are you sure? [y/N]} " response
+    read -r -p "${1:-Are you sure? [Y/n]} " response
     case $response in
         [yY][eE][sS]|[yY]) 
             true
             ;;
-        *)
+        [nN][oO]|[nN])
             false
+            ;;
+        *)
+            true
             ;;
     esac
 }
@@ -51,7 +54,7 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
 
   echo "\n\n   WARNING!!!\n\n   If you have more then 4 DVB adapters, or planning to use more then 4,\n   your kernel cannot be patched.\n   So if you did not do so allready,\n   recompile your kernel with apropiate dvb-mutex patch,\n   and 'CONFIG_DVB_MAX_ADAPTERS=<twice your adapters>'\n\n\nDo you want me to install linux-source-$SHORT_KERNEL?\nThis will remove any previously installed\nlinux-source packages and (re)install\nthe source for your current kernel.\n\nHaving done that, missing build dependencies\nwill be installed and your running kernel\nwill be patched for use with sasc.\n\nDon't forget to reboot to load new module once you are\ndone patching the kernel and compiling sasc and sasc module.\n"
 
-  confirm "Proceed?[y/N]"
+  confirm "Proceed?[Y/n]"
 
 
 

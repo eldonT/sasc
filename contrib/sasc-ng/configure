@@ -13,13 +13,16 @@ die_unknown(){
 
 confirm(){
     # call with a prompt string or use a default
-    read -r -p "${1:-Are you sure? [y/N]} " response
+    read -r -p "${1:-Are you sure? [Y/n]} " response
     case $response in
         [yY][eE][sS]|[yY]) 
             true
             ;;
-        *)
+        [nN][oO]|[nN])
             false
+            ;;
+        *)
+            true
             ;;
     esac
 }
@@ -189,7 +192,7 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
 
   echo "\nSasc needs a patched dvb-core.ko kernel module.\n\nIf you are running a default Debian kernel, I can do that for you.\n\nIf you want me to patch your kernel, answer 'y' to next question.\n\n"
 
- confirm "Do you want to run 'kernelpatch' first? [y/N]"
+ confirm "Do you want to run 'kernelpatch' first? [Y/n]"
 
   if [ $(echo $?) -eq 0 ]; then
     echo "\nStarting patch routine...\n"
