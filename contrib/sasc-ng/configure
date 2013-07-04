@@ -199,18 +199,19 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
     sleep 1
     ./kernelpatch 
   fi
-fi
 
-if [ $(echo $?) -eq 1 ]; then
-  echo "\nErrors encountered during kernel patch.\nFix the cause of the errors and run me again.\n"
-  confirm "Do you want to continue anyway? [Y/n]"
   if [ $(echo $?) -eq 1 ]; then
-    git clean -xfd
-    echo "\nAborting...\n"
-    exit 1
+    echo "\nErrors encountered during kernel patch.\nFix the cause of the errors and run me again.\n"
+    confirm "Do you want to continue anyway? [Y/n]"
+    if [ $(echo $?) -eq 1 ]; then
+      git clean -xfd
+      echo "\nAborting...\n"
+      exit 1
+    fi
   fi
 fi
-  
+
+
 if test "x$CXX" = "x"; then
   CXX=g++
 fi
