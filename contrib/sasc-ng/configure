@@ -11,7 +11,20 @@ die_unknown(){
     exit 1
 }
 
-confirm(){
+confirmno(){
+    # call with a prompt string or use a default
+    read -r -p "${1:-Are you sure? [y/N]} " response
+    case $response in
+        [yY][eE][sS]|[yY]) 
+            true
+            ;;
+        *)
+            false
+            ;;
+    esac
+}
+
+confirmyes(){
     # call with a prompt string or use a default
     read -r -p "${1:-Are you sure? [Y/n]} " response
     case $response in
@@ -44,42 +57,42 @@ check_cpu(){
 
 #try to figure out best FFdecsa compiler options
 get_cpu_optimization(){
-   FLAGS="FLAGS=-O3 -fexpensive-optimizations -funroll-loops"
-   arch=`uname -m`
-   processors_flags=`cat /proc/cpuinfo | grep "flags" | head -n 1`
-   vendor=`cat /proc/cpuinfo |grep "vendor_id" | head -n 1 | sed -e "s/.*:\W*//"`
-   gcc_ver=`$CXX -v 2>&1 | grep "gcc version" | head -n 1`
-   gcc_major=`echo $gcc_ver | sed -e 's/^gcc version \([0-9]*\)\..*/\1/'`
-   gcc_minor=`echo $gcc_ver | sed -e 's/^gcc version [0-9]*\.\([0-9]*\).*/\1/'`
-   if test $gcc_major -gt 4; then
-     ARCH="native"
-   elif test $gcc_major -eq 4 && test $gcc_minor -ge 2; then
-     ARCH="native"
-   elif test "x$arch" = "xx86_64"; then
-     if test "x$vendor" = "xAuthenticAMD"; then
-        ARCH="k8"
-     elif test "x$vendor" = "xGenuineIntel"; then
-        ARCH="nocona"
-     else
-        echo **WARNING** - Unknown vendor $vendor - assuming nocona
-        ARCH="nocona"
-     fi
-     FLAGS="$FLAGS -finline-limit=6000000 --param max-unrolled-insns=500"
-   elif test "x$arch" = "xathlon-xp"; then
-     ARCH="athlon-xp"
-     FLAGS="$FLAGS -finline-limit=6000000 --param max-unrolled-insns=500"
-   else
-     ARCH="pentium"
-   fi
-   OPTS=""
-   for opt in mmx sse sse2; do
-     if check_cpu $opt; then
-       OPTS="$OPTS $opt"
-       FLAGS="$FLAGS -m$opt"
-     fi
-   done
-   FLAGS="$FLAGS -march=$ARCH"
-   echo "\nProcessor capabilities: $ARCH ($OPTS )"
+  FLAGS="FLAGS=-O3 -fexpensive-optimizations -funroll-loops"
+  arch=`uname -m`
+  processors_flags=`cat /proc/cpuinfo | grep "flags" | head -n 1`
+  vendor=`cat /proc/cpuinfo |grep "vendor_id" | head -n 1 | sed -e "s/.*:\W*//"`
+  gcc_ver=`$CXX -v 2>&1 | grep "gcc version" | head -n 1`
+  gcc_major=`echo $gcc_ver | sed -e 's/^gcc version \([0-9]*\)\..*/\1/'`
+  gcc_minor=`echo $gcc_ver | sed -e 's/^gcc version [0-9]*\.\([0-9]*\).*/\1/'`
+  if test $gcc_major -gt 4; then
+    ARCH="native"
+  elif test $gcc_major -eq 4 && test $gcc_minor -ge 2; then
+    ARCH="native"
+  elif test "x$arch" = "xx86_64"; then
+    if test "x$vendor" = "xAuthenticAMD"; then
+      ARCH="k8"
+    elif test "x$vendor" = "xGenuineIntel"; then
+      ARCH="nocona"
+    else
+      echo **WARNING** - Unknown vendor $vendor - assuming nocona
+      ARCH="nocona"
+    fi
+    FLAGS="$FLAGS -finline-limit=6000000 --param max-unrolled-insns=500"
+  elif test "x$arch" = "xathlon-xp"; then
+    ARCH="athlon-xp"
+    FLAGS="$FLAGS -finline-limit=6000000 --param max-unrolled-insns=500"
+  else
+    ARCH="pentium"
+  fi
+  OPTS=""
+  for opt in mmx sse sse2; do
+    if check_cpu $opt; then
+      OPTS="$OPTS $opt"
+      FLAGS="$FLAGS -m$opt"
+    fi
+  done
+  FLAGS="$FLAGS -march=$ARCH"
+  echo "\nProcessor capabilities: $ARCH ($OPTS )"
 }
 
 show_help(){
@@ -155,44 +168,46 @@ if [ $FIRST_DIGIT -lt 3 ]; then
   exit 1
 fi
 
-# Are we running Debian?
-# If so, make our lives easier!
+
+
+#
+# Begin Debian section.
+#
 
 if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
 
 # Install dependencies
 
   if ! dpkg-query -l libv4l-dev > /dev/null 2>&1; then
-     echo "Missing libv4l-dev, marking for installation."
-     apt-get install libv4l-dev -y || die "Error installing libv4l-dev"
+    echo "\nMissing dependency libv4l-dev, marking for installation.\n"
+    apt-get install libv4l-dev -y || die "Error installing dependency libv4l-dev"
   fi
 
   if ! dpkg-query -l libproc-processtable-perl > /dev/null 2>&1; then
-     echo "Missing libproc-processtable-perl, marking for installation."
-     apt-get install libproc-processtable-perl -y || die "Error installing libproc-processtable-perl"
+    echo "\nMissing dependency libproc-processtable-perl, marking for installation.\n"
+    apt-get install libproc-processtable-perl -y || die "Error installing dependency libproc-processtable-perl"
   fi
 
   if ! dpkg-query -l libssl-dev > /dev/null 2>&1; then
-     echo "Missing libssl-dev, marking for installation."
-     apt-get install libssl-dev -y || die "Error installing libssl-dev"
+    echo "\nMissing dependency libssl-dev, marking for installation.\n"
+    apt-get install libssl-dev -y || die "Error installing dependency libssl-dev"
   fi
 
   if ! dpkg-query -l build-essential > /dev/null 2>&1; then
-     echo "Missing build-essential, marking for installation."
-     apt-get install build-essential -y || die "Error installing build-essential"
+    echo "\nMissing dependency build-essential, marking for installation.\n"
+    apt-get install build-essential -y || die "Error installing dependency build-essential"
   fi
 
   if ! dpkg-query -l linux-headers-`uname -r` > /dev/null 2>&1; then
-   echo "\nMissing linux-headers-`uname -r`, marking for installation.\n\n"
-       apt-get install linux-headers-`uname -r` -y  || die "Error installing linux-headers-`uname -r`"
+    echo "\nMissing dependency linux-headers-`uname -r`, marking for installation.\n"
+    apt-get install linux-headers-`uname -r` -y  || die "Error installing dependency linux-headers-`uname -r`"
   fi
 
+# When using sasc, the kernel has to be patched.
 
-  # When using sasc, the kernel has to be patched.
+  echo "\nSasc needs a patched dvb-core.ko kernel module.\n\nIf you are running a default Debian kernel, I can do that for you.\n\nIf you want me to patch your kernel, answer 'y' to next question,\nor just hit 'enter'\n\n"
 
-  echo "\nSasc needs a patched dvb-core.ko kernel module.\n\nIf you are running a default Debian kernel, I can do that for you.\n\nIf you want me to patch your kernel, answer 'y' to next question.\n\n"
-
- confirm "Do you want to run 'kernelpatch' first? [Y/n]"
+  confirmyes "Do you want to run 'kernelpatch' first? [Y/n]"
 
   if [ $(echo $?) -eq 0 ]; then
     echo "\nStarting patch routine...\n"
@@ -202,7 +217,7 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
 
   if [ $(echo $?) -eq 1 ]; then
     echo "\nErrors encountered during kernel patch.\nFix the cause of the errors and run me again.\n"
-    confirm "Do you want to continue anyway? [Y/n]"
+    confirmno "Do you want to continue anyway? [y/N]"
     if [ $(echo $?) -eq 1 ]; then
       git clean -xfd
       echo "\nAborting...\n"
@@ -212,9 +227,15 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
 fi
 
 
+#
+# End Debian section
+#
+
+
 if test "x$CXX" = "x"; then
   CXX=g++
 fi
+
 echo "\n\nUsing C++ compiler: $CXX"
 
 if test "x$ffdecsa_opt" = "xlong"; then
@@ -265,59 +286,59 @@ mkdir ${TMPDIR}
 #Test FFDECSA compile
 MAX_val=0
 if test "x$ffdecsa_opt" != "xno"; then
-   if test "x$ffdecsa_flags" = "x"; then
-     if test -f /proc/cpuinfo; then
-       get_cpu_optimization
-     fi
-   else
-     FLAGS=$ffdecsa_flags
-   fi
-   FFdecsaDIR="../../FFdecsa"
-   TMPOUT="${TMPDIR}/FFdecsa/out"
-   mkdir "${TMPDIR}/FFdecsa"
-   cp $FFdecsaDIR/*.c $FFdecsaDIR/*.h $FFdecsaDIR/Makefile "${TMPDIR}/FFdecsa/"
-   echo "\nTrying various FFdecsa optimizations..."
-   for var in ${FFDECSA_MODES}; do
-     make -C "${TMPDIR}/FFdecsa" FFdecsa_test "PARALLEL_MODE=${var}" "${FLAGS}" "COMPILER=$CXX" >/dev/null 2>&1
-     if test $? -ne 0 ; then
-       echo "    ${var}: build failed"
-     else
-       rm -f ${TMPOUT}
-       sync;sleep 2; "${TMPDIR}/FFdecsa/FFdecsa_test" > /dev/null 2>"${TMPOUT}"
-       if test $? -ne 0; then
-         echo "    ${var}: test failed"
-       else
-         grep FAILED "${TMPOUT}" >/dev/null 2>&1
-         if test $? -ne 1; then
-           echo "    ${var}: test failed"
-         else
-           res=`grep "speed=.*Mbit" "${TMPOUT}" | sed -e 's/^.*=\([0-9]*\)\.[0-9]* Mbit.*$/\1/'`
-           echo "    ${var}: $res"
-           if test $res -gt $MAX_val; then
-             MAX_val=$res
-             MAX_MODE=$var
-           fi
-         fi
-       fi
-     fi
-     make -C "${TMPDIR}/FFdecsa" clean >/dev/null 2>&1
-   done
-   echo "\nChoosing PARALLEL_MODE = ${MAX_MODE}"
-   echo "FFDECSA_OPTS = \"$FLAGS\" PARALLEL_MODE=${MAX_MODE} COMPILER=$CXX" >> config.mak
+  if test "x$ffdecsa_flags" = "x"; then
+    if test -f /proc/cpuinfo; then
+      get_cpu_optimization
+    fi
+  else
+    FLAGS=$ffdecsa_flags
+  fi
+  FFdecsaDIR="../../FFdecsa"
+  TMPOUT="${TMPDIR}/FFdecsa/out"
+  mkdir "${TMPDIR}/FFdecsa"
+  cp $FFdecsaDIR/*.c $FFdecsaDIR/*.h $FFdecsaDIR/Makefile "${TMPDIR}/FFdecsa/"
+  echo "\nTrying various FFdecsa optimizations..."
+  for var in ${FFDECSA_MODES}; do
+    make -C "${TMPDIR}/FFdecsa" FFdecsa_test "PARALLEL_MODE=${var}" "${FLAGS}" "COMPILER=$CXX" >/dev/null 2>&1
+    if test $? -ne 0 ; then
+      echo "    ${var}: build failed"
+    else
+      rm -f ${TMPOUT}
+      sync;sleep 2; "${TMPDIR}/FFdecsa/FFdecsa_test" > /dev/null 2>"${TMPOUT}"
+      if test $? -ne 0; then
+        echo "    ${var}: test failed"
+      else
+        grep FAILED "${TMPOUT}" >/dev/null 2>&1
+        if test $? -ne 1; then
+          echo "    ${var}: test failed"
+        else
+          res=`grep "speed=.*Mbit" "${TMPOUT}" | sed -e 's/^.*=\([0-9]*\)\.[0-9]* Mbit.*$/\1/'`
+          echo "    ${var}: $res"
+          if test $res -gt $MAX_val; then
+            MAX_val=$res
+            MAX_MODE=$var
+          fi
+        fi
+      fi
+    fi
+  make -C "${TMPDIR}/FFdecsa" clean >/dev/null 2>&1
+  done
+  echo "\nChoosing PARALLEL_MODE = ${MAX_MODE}"
+  echo "FFDECSA_OPTS = \"$FLAGS\" PARALLEL_MODE=${MAX_MODE} COMPILER=$CXX" >> config.mak
 else
-   if ! test -f /proc/cpuinfo; then
-     echo "\nYou should not set '--ffdecsa_mode='\n\nAborting...\n"
-     rm -rf "${TMPDIR}"
-     exit 1
-   fi
-   get_cpu_optimization
-   if test "x$MAX_MODE" != "xPARALLEL_32_INT"; then
-     echo "\nUsing PARALLEL_MODE = ${MAX_MODE}"
-     echo "FFDECSA_OPTS = \"$FLAGS\" PARALLEL_MODE=${MAX_MODE} COMPILER=$CXX" >> config.mak
-   else
-     echo "Using PARALLEL_MODE = ${MAX_MODE}"
-     echo "FFDECSA_OPTS = PARALLEL_MODE=${MAX_MODE} COMPILER=$CXX" >> config.mak
-   fi
+  if ! test -f /proc/cpuinfo; then
+    echo "\nYou should not set '--ffdecsa_mode='\n\nAborting...\n"
+    rm -rf "${TMPDIR}"
+    exit 1
+  fi
+  get_cpu_optimization
+  if test "x$MAX_MODE" != "xPARALLEL_32_INT"; then
+    echo "\nUsing PARALLEL_MODE = ${MAX_MODE}"
+    echo "FFDECSA_OPTS = \"$FLAGS\" PARALLEL_MODE=${MAX_MODE} COMPILER=$CXX" >> config.mak
+  else
+    echo "Using PARALLEL_MODE = ${MAX_MODE}"
+    echo "FFDECSA_OPTS = PARALLEL_MODE=${MAX_MODE} COMPILER=$CXX" >> config.mak
+  fi
 fi
 
 if test "x$dvb_path" != "x"; then
