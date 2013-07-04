@@ -59,7 +59,8 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
 
 
   if [ $(echo $?) -eq 0 ]; then
-    apt-get purge linux-source* -y && apt-get install linux-source-$SHORT_KERNEL -y && apt-get build-dep linux --no-install-recommends -y
+    apt-get purge linux-source* -y && apt-get build-dep linux --no-install-recommends -y
+    apt-get install linux-source-$SHORT_KERNEL -y || die "Error installing linux-source-$SHORT_KERNEL"
 
       echo "\nBuilding patched dvb-core module for kernel `uname -r`\n\nPreparing, this may take a while...\n"
       rm -rf $TEMPDIR
