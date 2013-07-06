@@ -205,7 +205,7 @@ if echo $OS | grep 'Debian' 2>&1 1>/dev/null; then
 
 # When using sasc, the kernel has to be patched.
 
-  echo "\nSasc needs a patched dvb-core.ko kernel module.\n\nIf you are running a default Debian kernel, I can do that for you.\n\nThis also works when you are running Stable with a kernel from Sid,\nif you have sid in your sources.list and the source for\nyour kernel is available in the repo's.\n\n"
+  echo "\nSasc needs a patched dvb-core.ko kernel module.\n\nIf you are running a default Debian kernel (including those frome 'backports'),\nI can do that for you.\n\nThis also works when you are running Stable with a kernel from Sid,\nif you have sid in your sources.list and the source for\nyour kernel is available in the repo's.\n\n"
 
   confirmyes "Do you want to run 'kernelpatch' first? [Y/n]"
 
