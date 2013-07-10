@@ -326,19 +326,20 @@ if test "x$ffdecsa_opt" != "xno"; then
   echo "\nChoosing PARALLEL_MODE = ${MAX_MODE}"
   echo "FFDECSA_OPTS = \"$FLAGS\" PARALLEL_MODE=${MAX_MODE} COMPILER=$CXX" >> config.mak
 else
-  if ! test -f /proc/cpuinfo; then
-    echo "\nYou should not set '--ffdecsa_mode='\n\nAborting...\n"
-    rm -rf "${TMPDIR}"
-    exit 1
-  fi
-  get_cpu_optimization
-  if test "x$MAX_MODE" != "xPARALLEL_32_INT"; then
-    echo "\nUsing PARALLEL_MODE = ${MAX_MODE}"
-    echo "FFDECSA_OPTS = \"$FLAGS\" PARALLEL_MODE=${MAX_MODE} COMPILER=$CXX" >> config.mak
-  else
-    echo "Using PARALLEL_MODE = ${MAX_MODE}"
-    echo "FFDECSA_OPTS = PARALLEL_MODE=${MAX_MODE} COMPILER=$CXX" >> config.mak
-  fi
+   if test "x$ffdecsa_flags" = "x"; then
+     if test -f /proc/cpuinfo; then
+       get_cpu_optimization
+     fi
+   else
+     FLAGS=$ffdecsa_flags
+   fi
+   if test "x$MAX_MODE" != "xPARALLEL_32_INT"; then
+     echo "Using PARALLEL_MODE = ${MAX_MODE}"
+     echo "FFDECSA_OPTS = \"$FLAGS\" PARALLEL_MODE=${MAX_MODE} COMPILER=$CXX" >> config.mak
+   else
+     echo "Using PARALLEL_MODE = ${MAX_MODE}"
+     echo "FFDECSA_OPTS = PARALLEL_MODE=${MAX_MODE} COMPILER=$CXX" >> config.mak
+   fi
 fi
 
 if test "x$dvb_path" != "x"; then
