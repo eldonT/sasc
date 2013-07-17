@@ -32,61 +32,6 @@
 
 static struct proc_dir_entry *procdir;
 
-static int dvblb_procfs_adapter_read(char *page, char **start, off_t off,
-                                     int count, int *eof, void *data)
-{
-	struct dvblb *dvblb = (struct dvblb *)data;
-	if (dvblb == NULL)
-		return 0;
-	return sprintf(page, "%d", dvblb->link);
-}
-
-static int dvblb_procfs_adapter_write(struct file *file, const char *buffer,
-                                      unsigned long count, void *data)
-{
-	char str[10];
-	int val, i, fm;
-	struct dvblb *dvbdev = (struct dvblb *)data;
-	if (dvbdev == NULL)
-		return count;
-	if (count > 10)
-		count = 10;
-	if (copy_from_user(str, buffer, count)) {
-		return -EFAULT;
-	}
-	val = simple_strtol(str, NULL, 0);
-
-	if(val == -999) {
-		/*This is a debug case.  Try to force close all open fds
-		  This is known not to be very reliable, but better than
-		  nothing
-		*/
-		for(i = 0; i < DVBLB_NUM_DEVS; i++) {
-			while((fm = inuse_filemap(&dvbdev->devinfo[i]))) {
-				filp_close(dvbdev->devinfo[i].dbgfilemap[fm],
-				           NULL);
-				dvbdev->devinfo[i].filemap[fm] = NULL;
-			}
-		}
-		return count;
-	}
-	for(i = 0; i < DVBLB_NUM_DEVS; i++) {
-		if(dvbdev->devinfo[i].forward_dev == NULL)
-			continue;
-		if((fm = inuse_filemap(&dvbdev->devinfo[i]))) {
-			int type = dvbdev->devinfo[i].lb_dev->type;
-			printk("dvbloopback: Can't change forward on adapter%d."
-			       " Device %s still has %d users!\n",
-			       dvbdev->adapter.num, dnames[type], fm);
-			return count;
-		}
-	}
-	for(i = 0; i < DVBLB_NUM_DEVS; i++)
-		dvbdev->devinfo[i].forward_dev = NULL;
-	dvbdev->link = val;
-	return count;
-}
-
 int dvblb_remove_procfs(struct proc_dir_entry *pdir,
                         struct proc_dir_entry *parent)
 {
